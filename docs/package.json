@@ -1,0 +1,16 @@
+{
+  "name": "roninz-track-docs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:serve": "vitepress serve"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vitepress": "^1.0.0-rc.44"
+  }
+}
