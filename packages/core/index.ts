@@ -1,1 +1,5 @@
-export const a = "zlzl";
+import { InitOptions } from "./src/types";
+
+export const init = (options: InitOptions) => {
+    
+};

@@ -1,3 +1,3 @@
-import { a } from "@roninz-track/core";
+import { init } from "@roninz-track/core";
 
-console.log(a, "zlzl");
+// console.log(init(), "zlzl");

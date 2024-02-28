@@ -1,9 +1,6 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import {a} from '@roninz-track/core'
-
-console.log(a);
-
+import { init } from "@roninz-track/core";
 
 const app = createApp(App);
 
