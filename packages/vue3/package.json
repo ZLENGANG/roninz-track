@@ -1,0 +1,15 @@
+{
+  "name": "@roninz-track/vue3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "install.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@roninz-track/core": "^1.0.0"
+  }
+}
