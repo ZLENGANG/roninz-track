@@ -10,4 +10,14 @@ export type InitOptions = {
 
   /**应用版本 */
   appVersion?: string;
+
+  /**用户Id */
+  userUuid?: string;
+
+  /**额外参数 */
+  ext?: AnyObj;
+};
+
+export type AnyObj<T = any> = {
+  [key: string]: T;
 };
