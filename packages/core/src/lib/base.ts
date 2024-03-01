@@ -86,8 +86,6 @@ export class BaseInfo {
     console.log(options);
 
     getIPs().then((ips: any) => {
-      console.log(ips);
-      
       this.base = {
         ...this.device,
         userUuid: uuid(),
@@ -98,11 +96,10 @@ export class BaseInfo {
         pageId: this.pageId as string,
         sessionId,
         sdkVersion: SDK_VERSION,
-        ip: ips[1],
+        ip: ips[1] || ips[0],
       } as Base;
 
       console.log(this.base);
-      
     });
   }
 }

@@ -21,3 +21,7 @@ export type InitOptions = {
 export type AnyObj<T = any> = {
   [key: string]: T;
 };
+
+export type AnyFun = {
+  (...args: any[]): any;
+};
