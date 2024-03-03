@@ -1,10 +1,10 @@
-import { isWindow } from "./is";
+import { isWindow } from './is';
 
 /**
  * 是否为浏览器环境
  */
 export const isBrowserEnv = isWindow(
-  typeof window !== "undefined" ? window : 0
+  typeof window !== 'undefined' ? window : 0
 );
 
 /**
@@ -19,3 +19,7 @@ export function getGlobal(): Window {
   if (isBrowserEnv || isElectronEnv) return window;
   return {} as Window;
 }
+
+const _global = getGlobal();
+
+export { _global };

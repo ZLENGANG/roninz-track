@@ -1,3 +1,21 @@
+import { AnyFun } from "../types";
+
+/**
+ * 添加事件监听器
+ * @param target 对象
+ * @param eventName 事件名称
+ * @param handler 回调函数
+ * @param opitons
+ */
+export function on(
+  target: Window | Document,
+  eventName: string,
+  handler: AnyFun,
+  opitons = false
+): void {
+  target.addEventListener(eventName, handler, opitons);
+}
+
 /**
  * 补全字符
  * @param {*} num 初始值
@@ -5,7 +23,7 @@
  * @param {*} placeholder 补全的值
  * @returns 补全后的值
  */
-export function pad(num: number, len: number, placeholder = "0") {
+export function pad(num: number, len: number, placeholder = '0') {
   const str = String(num);
   if (str.length < len) {
     let result = str;
@@ -69,4 +87,17 @@ export function getCookieByName(name: string) {
  */
 export function getTimestamp(): number {
   return Date.now();
+}
+
+/**
+ * 判断对象中是否包含该属性
+ * @param key 键
+ * @param object 对象
+ * @returns 是否包含
+ */
+export function isValidKey(
+  key: string | number | symbol,
+  object: object
+): key is keyof typeof object {
+  return key in object;
 }

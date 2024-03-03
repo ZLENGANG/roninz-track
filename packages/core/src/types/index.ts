@@ -16,6 +16,9 @@ export type InitOptions = {
 
   /**额外参数 */
   ext?: AnyObj;
+
+  /**是否debug模式 */
+  debug?: boolean;
 };
 
 export type AnyObj<T = any> = {
