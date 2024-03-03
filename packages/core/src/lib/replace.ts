@@ -1,5 +1,5 @@
 import { EVENTTYPES } from '../common/constant';
-import { isValidKey, on } from '../utils';
+import { isValidKey, on, replaceAop } from '../utils';
 import { _global } from '../utils/global';
 import { eventBus } from './eventBus';
 
@@ -13,6 +13,18 @@ function replace(type: EVENTTYPES) {
   if (!isValidKey(type, EVENTTYPES)) return;
   const value = EVENTTYPES[type];
   switch (value) {
+    case EVENTTYPES.ERROR:
+      listenError(EVENTTYPES.ERROR);
+      break;
+
+    case EVENTTYPES.UNHANDLEDREJECTION:
+      listenUnhandledRejection(EVENTTYPES.UNHANDLEDREJECTION);
+      break;
+
+    case EVENTTYPES.CONSOLEERROR:
+      replaceConsoleError(EVENTTYPES.CONSOLEERROR);
+      break;
+
     case EVENTTYPES.OFFLINE:
       listenOffline(EVENTTYPES.OFFLINE);
       break;
@@ -24,6 +36,42 @@ function replace(type: EVENTTYPES) {
     default:
       break;
   }
+}
+
+/**
+ * 监听 - error
+ */
+function listenError(type: EVENTTYPES) {
+  on(
+    _global,
+    'error',
+    function (e: ErrorEvent) {
+      eventBus.runEvent(type, e);
+    },
+    true
+  );
+}
+
+/**
+ * 监听 - unhandledrejection（promise异常）
+ */
+function listenUnhandledRejection(type: EVENTTYPES): void {
+  on(_global, 'unhandledrejection', function (ev: PromiseRejectionEvent) {
+    // ev.preventDefault() 阻止默认行为后，控制台就不会再报红色错误
+    eventBus.runEvent(type, ev);
+  });
+}
+
+/**
+ * 重写 - console.error
+ */
+function replaceConsoleError(type: EVENTTYPES) {
+  replaceAop(console, 'error', (originalError) => {
+    return function (this: any, ...args: any[]) {
+      eventBus.runEvent(type, args);
+      originalError.apply(this, args);
+    };
+  });
 }
 
 /**

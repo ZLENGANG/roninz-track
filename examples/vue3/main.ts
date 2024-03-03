@@ -9,4 +9,11 @@ init({
   appCode: 'ddd',
   debug: true,
 });
+// let p = new Promise((resolve, reject) => {
+//   reject('error ddd');
+// });
+
+
+
+console.log(dd);
 app.mount('#app');

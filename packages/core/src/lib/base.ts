@@ -1,11 +1,11 @@
-import { DEVICE_KEY, SDK_VERSION } from "../common/config";
-import { AnyObj } from "../types";
-import { getCookieByName, uuid } from "../utils";
-import { load } from "../utils/fingerprintjs";
-import { getIPs } from "../utils/getIps";
-import { getGlobal } from "../utils/global";
-import { getSessionId } from "../utils/session";
-import { options } from "./options";
+import { DEVICE_KEY, SDK_VERSION } from '../common/config';
+import { AnyObj } from '../types';
+import { getCookieByName, uuid } from '../utils';
+import { load } from '../utils/fingerprintjs';
+import { getIPs } from '../utils/getIps';
+import { getGlobal } from '../utils/global';
+import { getSessionId } from '../utils/session';
+import { options } from './options';
 
 interface Device {
   clientHeight: number;
@@ -35,7 +35,7 @@ interface Base extends Device {
 export class BaseInfo {
   public base: Base | undefined;
   public pageId: string | undefined;
-  private sdkUserUuid = "";
+  private sdkUserUuid = '';
   private device: Device | undefined;
 
   constructor() {
@@ -83,7 +83,6 @@ export class BaseInfo {
 
   private initBase() {
     const sessionId = getSessionId();
-    console.log(options);
 
     getIPs().then((ips: any) => {
       this.base = {
@@ -98,8 +97,6 @@ export class BaseInfo {
         sdkVersion: SDK_VERSION,
         ip: ips[1] || ips[0],
       } as Base;
-
-      console.log(this.base);
     });
   }
 }

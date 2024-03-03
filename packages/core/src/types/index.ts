@@ -1,3 +1,8 @@
+interface Error {
+  core?: boolean; // 是否采集异常数据
+  server?: boolean; // 是否采集报错接口数据
+}
+
 export type InitOptions = {
   /**上报地址 */
   dsn: string;
@@ -19,6 +24,8 @@ export type InitOptions = {
 
   /**是否debug模式 */
   debug?: boolean;
+
+  error?: Error | boolean;
 };
 
 export type AnyObj<T = any> = {
