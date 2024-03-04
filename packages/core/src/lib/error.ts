@@ -1,6 +1,7 @@
-import { EVENTTYPES, SENDID } from '../common/constant';
-import { eventBus } from './eventBus';
-import { options } from './options';
+import { EVENTTYPES, SENDID } from "../common/constant";
+import { filter, map } from "../utils";
+import { eventBus } from "./eventBus";
+import { options } from "./options";
 
 type InstabilityNature = {
   lineNumber: string;
@@ -13,7 +14,46 @@ type InstabilityNature = {
  * @param err Error 错误对象
  */
 function parseStack(err: Error) {
-  console.dir(err);
+  const { stack = "", message = "" } = err;
+  const result = { eventId: SENDID.CODE, errMessage: message, errStack: stack };
+
+  if (stack) {
+    const rChromeCallStack = /^\s*at\s*([^(]+)\s*\((.+?):(\d+):(\d+)\)$/;
+    const rMozlliaCallStack = /^\s*([^@]*)@(.+?):(\d+):(\d+)$/;
+    // chrome中包含了message信息,将其去除,并去除后面的换行符
+    const callStackStr = stack.replace(
+      new RegExp(`^[\\w\\s:]*${message}\n`),
+      ""
+    );
+
+    const callStackFrameList = map(
+      filter(callStackStr.split("\n"), (item: string) => item),
+      (str: string) => {
+        const chromeErrResult = str.match(rChromeCallStack);
+        if (chromeErrResult) {
+          return {
+            triggerPageUrl: chromeErrResult[2],
+            line: chromeErrResult[3], // 错误发生位置的行数
+            col: chromeErrResult[4], // 错误发生位置的列数
+          };
+        }
+
+        const mozlliaErrResult = str.match(rMozlliaCallStack);
+        if (mozlliaErrResult) {
+          return {
+            triggerPageUrl: mozlliaErrResult[2],
+            line: mozlliaErrResult[3],
+            col: mozlliaErrResult[4],
+          };
+        }
+        return {};
+      }
+    );
+    const item = callStackFrameList[0] || {};
+
+    return { ...result, ...item };
+  }
+  return result;
 }
 
 /**
@@ -26,20 +66,20 @@ function parseError(e: any) {
     const { message, stack, lineNumber, fileName, columnNumber } = e as Error &
       InstabilityNature;
 
-    // if (fileName) {
-    //   return {
-    //     errMessage: message,
-    //     errStack: stack,
-    //     eventId: SENDID.CODE,
-    //     line: lineNumber, // 不稳定属性 - 在某些浏览器可能是undefined，被废弃了
-    //     col: columnNumber, // 不稳定属性 - 非标准，有些浏览器可能不支持
-    //     triggerPageUrl: fileName, // 不稳定属性 - 非标准，有些浏览器可能不支持
-    //   };
-    // }
+    if (fileName) {
+      return {
+        errMessage: message,
+        errStack: stack,
+        eventId: SENDID.CODE,
+        line: lineNumber, // 不稳定属性 - 在某些浏览器可能是undefined，被废弃了
+        col: columnNumber, // 不稳定属性 - 非标准，有些浏览器可能不支持
+        triggerPageUrl: fileName, // 不稳定属性 - 非标准，有些浏览器可能不支持
+      };
+    }
 
     return parseStack(e);
   }
-  if (typeof e === 'string') {
+  if (typeof e === "string") {
     return {
       eventId: SENDID.REJECT,
       errMessage: e,
@@ -79,7 +119,7 @@ export function initError() {
     type: EVENTTYPES.ERROR,
     callback: (e: ErrorEvent) => {
       const errorInfo = parseErrorEvent(e);
-      //   console.log(errorInfo);
+        console.log(errorInfo);
     },
   });
 
@@ -93,7 +133,7 @@ export function initError() {
   eventBus.addEvent({
     type: EVENTTYPES.CONSOLEERROR,
     callback: (e: any) => {
-      console.log(e, 'console111');
+      console.log(e, "console111");
     },
   });
 }
