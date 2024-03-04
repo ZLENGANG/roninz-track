@@ -6,3 +6,4 @@ function isType(type: any) {
 
 export const isWindow = isType('Window');
 export const isFunction = isType('Function');
+export const isArray = isType('Array')

@@ -1,7 +1,9 @@
-import { EVENTTYPES, SENDID } from "../common/constant";
-import { filter, map } from "../utils";
-import { eventBus } from "./eventBus";
-import { options } from "./options";
+import { EVENTTYPES, SENDID } from '../common/constant';
+import { filter, map } from '../utils';
+import { _global } from '../utils/global';
+import { isArray } from '../utils/is';
+import { eventBus } from './eventBus';
+import { options } from './options';
 
 type InstabilityNature = {
   lineNumber: string;
@@ -14,7 +16,7 @@ type InstabilityNature = {
  * @param err Error 错误对象
  */
 function parseStack(err: Error) {
-  const { stack = "", message = "" } = err;
+  const { stack = '', message = '' } = err;
   const result = { eventId: SENDID.CODE, errMessage: message, errStack: stack };
 
   if (stack) {
@@ -23,11 +25,11 @@ function parseStack(err: Error) {
     // chrome中包含了message信息,将其去除,并去除后面的换行符
     const callStackStr = stack.replace(
       new RegExp(`^[\\w\\s:]*${message}\n`),
-      ""
+      ''
     );
 
     const callStackFrameList = map(
-      filter(callStackStr.split("\n"), (item: string) => item),
+      filter(callStackStr.split('\n'), (item: string) => item),
       (str: string) => {
         const chromeErrResult = str.match(rChromeCallStack);
         if (chromeErrResult) {
@@ -79,12 +81,20 @@ function parseError(e: any) {
 
     return parseStack(e);
   }
-  if (typeof e === "string") {
+
+  // reject 错误
+  if (typeof e === 'string') {
     return {
       eventId: SENDID.REJECT,
       errMessage: e,
     };
   }
+
+  // console.error 暴露的错误
+  if (isArray(e))
+    return { eventId: SENDID.CONSOLEERROR, errMessage: e.join(';') };
+
+  return {};
 }
 
 /**
@@ -96,10 +106,37 @@ function isPromiseRejectedResult(
   return (event as PromiseRejectedResult).reason !== undefined;
 }
 
+/**
+ * 解析错误事件，根据不同的错误类型返回不同的错误信息。
+ * @param event 可以是 ErrorEvent 或 PromiseRejectedResult 类型。
+ * @returns 返回一个对象，包含错误的详细信息。
+ */
 function parseErrorEvent(event: ErrorEvent | PromiseRejectedResult) {
   // promise reject错误
   if (isPromiseRejectedResult(event)) {
     return { eventId: SENDID.CODE, ...parseError(event.reason) };
+  }
+
+  // html元素上发生的异常错误
+  const { target } = event;
+  if (target instanceof HTMLElement) {
+    if (target.nodeType === 1) {
+      const result = {
+        initiatorType: target.nodeName.toLowerCase(),
+        eventId: SENDID.RESOURCE,
+        requestUrl: '',
+      };
+      switch (target.nodeName.toLowerCase()) {
+        case 'link':
+          result.requestUrl = (target as HTMLLinkElement).href;
+          break;
+        default:
+          result.requestUrl =
+            (target as HTMLImageElement).currentSrc ||
+            (target as HTMLScriptElement).src;
+      }
+      return result;
+    }
   }
 
   //   代码错误
@@ -110,7 +147,26 @@ function parseErrorEvent(event: ErrorEvent | PromiseRejectedResult) {
     e.lineNumber = e.lineno || event.lineno;
     return { eventId: SENDID.CODE, ...parseError(e) };
   }
+
+  // 兜底
+  // ie9版本,从全局的event对象中获取错误信息
+  return {
+    eventId: SENDID.CODE,
+    line: (_global as any).event.errorLine,
+    col: (_global as any).event.errorCharacter,
+    errMessage: (_global as any).event.errorMessage,
+    triggerPageUrl: (_global as any).event.errorUrl,
+  };
 }
+
+/**
+ * 发送错误事件信息
+ * @param errorInfo 信息源
+ */
+function emit(errorInfo: any, flush = false) {
+
+}
+
 export function initError() {
   //@ts-ignore
   if (!options.error?.core) return;
@@ -119,7 +175,6 @@ export function initError() {
     type: EVENTTYPES.ERROR,
     callback: (e: ErrorEvent) => {
       const errorInfo = parseErrorEvent(e);
-        console.log(errorInfo);
     },
   });
 
@@ -133,7 +188,8 @@ export function initError() {
   eventBus.addEvent({
     type: EVENTTYPES.CONSOLEERROR,
     callback: (e: any) => {
-      console.log(e, "console111");
+      const errorInfo = parseError(e);
+      console.log(errorInfo);
     },
   });
 }
