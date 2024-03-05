@@ -1,11 +1,12 @@
-import { EVENTTYPES, SEDNEVENTTYPES, SENDID } from "../common/constant";
-import { RecordEventScope } from "../types";
-import { filter, map } from "../utils";
-import { _global } from "../utils/global";
-import { isArray } from "../utils/is";
-import { eventBus } from "./eventBus";
-import { options } from "./options";
-import { getEventList } from "./recordscreen";
+import { EVENTTYPES, SEDNEVENTTYPES, SENDID } from '../common/constant';
+import { RecordEventScope } from '../types';
+import { filter, getLocationHref, getTimestamp, map } from '../utils';
+import { _global } from '../utils/global';
+import { isArray } from '../utils/is';
+import { eventBus } from './eventBus';
+import { options } from './options';
+import { getEventList, zip } from './recordscreen';
+import { sendData } from './sendData';
 
 type InstabilityNature = {
   lineNumber: string;
@@ -18,7 +19,7 @@ type InstabilityNature = {
  * @param err Error 错误对象
  */
 function parseStack(err: Error) {
-  const { stack = "", message = "" } = err;
+  const { stack = '', message = '' } = err;
   const result = { eventId: SENDID.CODE, errMessage: message, errStack: stack };
 
   if (stack) {
@@ -27,11 +28,11 @@ function parseStack(err: Error) {
     // chrome中包含了message信息,将其去除,并去除后面的换行符
     const callStackStr = stack.replace(
       new RegExp(`^[\\w\\s:]*${message}\n`),
-      ""
+      ''
     );
 
     const callStackFrameList = map(
-      filter(callStackStr.split("\n"), (item: string) => item),
+      filter(callStackStr.split('\n'), (item: string) => item),
       (str: string) => {
         const chromeErrResult = str.match(rChromeCallStack);
         if (chromeErrResult) {
@@ -85,7 +86,7 @@ function parseError(e: any) {
   }
 
   // reject 错误
-  if (typeof e === "string") {
+  if (typeof e === 'string') {
     return {
       eventId: SENDID.REJECT,
       errMessage: e,
@@ -94,7 +95,7 @@ function parseError(e: any) {
 
   // console.error 暴露的错误
   if (isArray(e))
-    return { eventId: SENDID.CONSOLEERROR, errMessage: e.join(";") };
+    return { eventId: SENDID.CONSOLEERROR, errMessage: e.join(';') };
 
   return {};
 }
@@ -126,10 +127,10 @@ function parseErrorEvent(event: ErrorEvent | PromiseRejectedResult) {
       const result = {
         initiatorType: target.nodeName.toLowerCase(),
         eventId: SENDID.RESOURCE,
-        requestUrl: "",
+        requestUrl: '',
       };
       switch (target.nodeName.toLowerCase()) {
-        case "link":
+        case 'link':
           result.requestUrl = (target as HTMLLinkElement).href;
           break;
         default:
@@ -165,6 +166,7 @@ function getRecordEvent(): RecordEventScope[] {
   const _recordscreenList: RecordEventScope[] = JSON.parse(
     JSON.stringify(getEventList())
   );
+
   return _recordscreenList
     .slice(-2)
     .map((item) => item.eventList)
@@ -179,8 +181,11 @@ function emit(errorInfo: any, flush = false) {
   const info = {
     ...errorInfo,
     eventType: SEDNEVENTTYPES.ERROR,
-    recordscreen: options.recordScreen ? getRecordEvent() : null,
+    recordscreen: options.recordScreen ? zip(getRecordEvent()) : null,
+    triggerPageUrl: getLocationHref(),
+    triggerTime: getTimestamp()
   };
+  sendData.emit(info, flush)
 }
 
 export function initError() {

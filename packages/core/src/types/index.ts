@@ -29,6 +29,11 @@ export type InitOptions = {
 
   // 是否开启录屏
   recordScreen?: boolean;
+
+  tracesSampleRate?: number; // 抽样发送
+
+  // 添加到行为列表前的 hook (在这里面可以给出错误类型，然后就能达到用户想拿到是何种事件类型的触发)
+  beforePushEventList?: AnyFun;
 };
 
 export type AnyObj<T = any> = {
@@ -40,6 +45,6 @@ export type AnyFun = {
 };
 
 export interface RecordEventScope {
-  scope: string
-  eventList: any[]
+  scope: string;
+  eventList: any[];
 }

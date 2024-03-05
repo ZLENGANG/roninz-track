@@ -33,6 +33,8 @@
     "examples/vue3"
   ],
   "dependencies": {
+    "js-base64": "^3.7.7",
+    "pako": "^2.1.0",
     "rrweb": "^2.0.0-alpha.4"
   }
 }

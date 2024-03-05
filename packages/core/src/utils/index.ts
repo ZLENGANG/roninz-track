@@ -1,5 +1,5 @@
-import { AnyFun, AnyObj } from "../types";
-import { isFunction } from "./is";
+import { AnyFun, AnyObj } from '../types';
+import { isFunction } from './is';
 
 /**
  * 添加事件监听器
@@ -47,7 +47,7 @@ export function replaceAop(
  * @param {*} placeholder 补全的值
  * @returns 补全后的值
  */
-export function pad(num: number, len: number, placeholder = "0") {
+export function pad(num: number, len: number, placeholder = '0') {
   const str = String(num);
   if (str.length < len) {
     let result = str;
@@ -103,6 +103,15 @@ export function uuid() {
 export function getCookieByName(name: string) {
   const result = document.cookie.match(new RegExp(`${name}=([^;]+)(;|$)`));
   return result ? result[1] : undefined;
+}
+
+/**
+ * 获取当前页面的url
+ * @returns 当前页面的url
+ */
+export function getLocationHref(): string {
+  if (typeof document === 'undefined' || document.location == null) return '';
+  return document.location.href;
 }
 
 /**
@@ -165,4 +174,40 @@ const arrayFilter =
  */
 export function filter(arr: any[], fn: AnyFun) {
   return arrayFilter.call(arr, fn);
+}
+
+/**
+ * 随机概率通过
+ * @param randow 设定比例，例如 0.7 代表 70%的概率通过
+ * @returns 是否通过
+ */
+export function randomBoolean(randow: number) {
+  return Math.random() <= randow;
+}
+
+/**
+ * 批量执行方法
+ * @param funList 方法数组
+ * @param through 是否将第一次参数贯穿全部方法
+ * @param args 额外参数
+ * @returns
+ */
+export function executeFunctions(
+  funList: AnyFun[],
+  through: boolean,
+  args: any
+): any {
+  debugger
+  if (funList && funList.length === 0) return args;
+
+  let result: any = undefined;
+  for (let i = 0; i < funList.length; i++) {
+    const func = funList[i];
+    if (i === 0 || through) {
+      result = func(args);
+    } else {
+      result = func(result);
+    }
+  }
+  return result;
 }
