@@ -1,20 +1,22 @@
-import { InitOptions } from '../types';
+import { InitOptions } from "../types";
 
 export class Options {
-  dsn = ''; // 上报地址
-  appName = ''; // 应用名称
-  appCode: InitOptions['appCode'] = ''; // 应用code
-  debug: InitOptions['debug'] = false;
-  error: InitOptions['error'] = {
+  dsn = ""; // 上报地址
+  appName = ""; // 应用名称
+  appCode: InitOptions["appCode"] = ""; // 应用code
+  debug: InitOptions["debug"] = false;
+  error: InitOptions["error"] = {
     core: true,
     server: true,
   };
+  recordScreen: InitOptions["recordScreen"] = true;
 
   constructor(options: InitOptions) {
     this.dsn = options.dsn;
     this.appName = options.appName;
     this.appCode = options.appCode;
     this.debug = options.debug;
+    this.recordScreen = options.recordScreen || this.recordScreen;
 
     if (options.error === false) {
       this.error = {

@@ -31,3 +31,18 @@ export enum SENDID {
   REJECT = 'reject', // reject
   CONSOLEERROR = 'console.error', // console.error
 }
+
+
+/**
+ * 触发的事件是什么类型 - eventType
+ */
+export enum SEDNEVENTTYPES {
+  PV = 'pv', // 路由跳转
+  PVDURATION = 'pv-duration', // 页面停留事件
+  ERROR = 'error', // 错误
+  PERFORMANCE = 'performance', // 资源
+  CLICK = 'click', // 点击
+  DWELL = 'dwell', // 页面卸载
+  CUSTOM = 'custom', // 手动触发事件
+  INTERSECTION = 'intersection' // 曝光采集
+}

@@ -26,6 +26,9 @@ export type InitOptions = {
   debug?: boolean;
 
   error?: Error | boolean;
+
+  // 是否开启录屏
+  recordScreen?: boolean;
 };
 
 export type AnyObj<T = any> = {
@@ -35,3 +38,8 @@ export type AnyObj<T = any> = {
 export type AnyFun = {
   (...args: any[]): any;
 };
+
+export interface RecordEventScope {
+  scope: string
+  eventList: any[]
+}

@@ -5,6 +5,7 @@ import { initSendData } from './src/lib/sendData';
 import { initLineStatus } from './src/lib/line-status';
 import { initReplace } from './src/lib/replace';
 import { initError } from './src/lib/error';
+import { initRecordScreen } from './src/lib/recordscreen';
 
 export const init = (options: InitOptions) => {
   if (!initOptions(options)) {
@@ -16,4 +17,5 @@ export const init = (options: InitOptions) => {
   initLineStatus();
 
   initError()
+  initRecordScreen()
 };
