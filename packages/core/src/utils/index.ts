@@ -197,7 +197,6 @@ export function executeFunctions(
   through: boolean,
   args: any
 ): any {
-  debugger
   if (funList && funList.length === 0) return args;
 
   let result: any = undefined;

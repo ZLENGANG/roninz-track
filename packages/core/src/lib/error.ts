@@ -185,6 +185,8 @@ function emit(errorInfo: any, flush = false) {
     triggerPageUrl: getLocationHref(),
     triggerTime: getTimestamp()
   };
+  console.log(info);
+  
   sendData.emit(info, flush)
 }
 

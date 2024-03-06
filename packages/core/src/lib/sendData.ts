@@ -1,8 +1,8 @@
-import { AnyFun, AnyObj } from '../types';
-import { executeFunctions, randomBoolean } from '../utils';
-import { isArray } from '../utils/is';
-import { lineStatus } from './line-status';
-import { options } from './options';
+import { AnyFun, AnyObj } from "../types";
+import { executeFunctions, randomBoolean } from "../utils";
+import { isArray } from "../utils/is";
+import { lineStatus } from "./line-status";
+import { options } from "./options";
 
 export class SendData {
   public emit(e: AnyObj, flush = false) {
@@ -18,8 +18,6 @@ export class SendData {
       false,
       e
     );
-
-    console.log(eventList, 'zlzlzl');
   }
 }
 
