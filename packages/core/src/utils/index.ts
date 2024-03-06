@@ -1,5 +1,5 @@
 import { AnyFun, AnyObj } from '../types';
-import { isFunction } from './is';
+import { isArray, isFunction, isRegExp } from './is';
 
 /**
  * 添加事件监听器
@@ -210,3 +210,46 @@ export function executeFunctions(
   }
   return result;
 }
+
+/**
+ * 深度合并对象
+ */
+export function deepAssign<T>(target: AnyObj, ...sources: AnyObj[]) {
+  sources.forEach((source) => {
+    for (const key in source) {
+      if (source[key] !== null && isRegExp(source[key])) {
+        target[key] = source[key];
+      } else if (source[key] !== null && typeof source[key] === 'object') {
+        // 如果当前 key 对应的值是一个对象或数组，则进行递归
+        target[key] = deepAssign(
+          target[key] || (isArray(source[key]) ? [] : {}),
+          source[key]
+        );
+      } else {
+        // 如果当前 key 对应的值是基本类型数据，则直接赋值
+        target[key] = source[key];
+      }
+    }
+  });
+  return target as T;
+}
+
+/**
+ * 判断入参类型
+ * @param target 任意入参
+ * @returns 类型
+ */
+export function typeofAny(target: any): string {
+  return Object.prototype.toString.call(target).slice(8, -1).toLowerCase();
+}
+
+/**
+ * 可以理解为异步执行
+ * requestIdleCallback 是浏览器空闲时会自动执行内部函数
+ * requestAnimationFrame 是浏览器必须执行的
+ * 关于 requestIdleCallback 和  requestAnimationFrame 可以参考 https://www.cnblogs.com/cangqinglang/p/13877078.html
+ */
+export const nextTime =
+  window.requestIdleCallback ||
+  window.requestAnimationFrame ||
+  ((callback) => setTimeout(callback, 17));

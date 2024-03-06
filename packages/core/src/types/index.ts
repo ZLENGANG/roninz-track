@@ -32,8 +32,20 @@ export type InternalOptions = {
 
   tracesSampleRate: number; // 抽样发送
 
+  // 上报数据最大缓存数
+  cacheMaxLength: number;
+
+  // 上报数据最大等待时间
+  cacheWatingTime: number;
+
   // 添加到行为列表前的 hook (在这里面可以给出错误类型，然后就能达到用户想拿到是何种事件类型的触发)
   beforePushEventList: AnyFun[];
+
+  // 数据上报前的 hook
+  beforeSendData: AnyFun[];
+
+  // 数据上报后的 hook
+  afterSendData: AnyFun[] 
 };
 
 export type InitOptions = {
@@ -65,8 +77,20 @@ export type InitOptions = {
 
   tracesSampleRate?: number; // 抽样发送
 
+  // 上报数据最大缓存数
+  cacheMaxLength?: number;
+
+  // 上报数据最大等待时间
+  cacheWatingTime?: number;
+
   // 添加到行为列表前的 hook (在这里面可以给出错误类型，然后就能达到用户想拿到是何种事件类型的触发)
   beforePushEventList?: AnyFun;
+
+  // 数据上报前的 hook
+  beforeSendData?: (data: any) => any;
+  
+  // 数据上报后的 hook
+  afterSendData?: (data: any) => void 
 };
 
 export type AnyObj<T = any> = {

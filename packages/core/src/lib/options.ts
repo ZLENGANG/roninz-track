@@ -1,25 +1,178 @@
-import { AnyFun, InitOptions, InternalOptions } from "../types";
+import { AnyFun, InitOptions, InternalOptions } from '../types';
+import { deepAssign, typeofAny } from '../utils';
+import { isEmpty, logError } from '../utils/is';
 
 export class Options implements InternalOptions {
-  dsn = ""; // 上报地址
-  appName = ""; // 应用名称
-  appCode = ""; // 应用code
+  dsn = ''; // 上报地址
+  appName = ''; // 应用名称
+  appCode = ''; // 应用code
+  appVersion = '';
   debug = false;
+  recordScreen = true;
+  tracesSampleRate = 1;
+  userUuid = '';
+  cacheMaxLength = 5;
+  cacheWatingTime = 5000;
+
   error = {
     core: true,
     server: true,
   };
-  recordScreen = true;
-  tracesSampleRate = 1;
-  beforePushEventList = [];
+  ext = {};
 
-  constructor(options: InitOptions) {
-    
+  beforePushEventList: AnyFun[] = [];
+  beforeSendData: AnyFun[] = [];
+  afterSendData: AnyFun[] = [];
+
+  constructor(initOptions: InitOptions) {
+    const _options = this.transitionOptions(initOptions);
+    deepAssign<Options>(this, _options);
+  }
+
+  /**
+   * 对入参配置项进行转换
+   */
+  private transitionOptions(options: InitOptions): Options {
+    const _options = deepAssign<Options>({}, this, options);
+    const { error } = _options;
+    const { beforePushEventList, beforeSendData, afterSendData } = options;
+
+    if (typeof error === 'boolean') {
+      _options.error = {
+        core: error,
+        server: error,
+      };
+    }
+
+    if (beforePushEventList) {
+      _options.beforePushEventList = [beforePushEventList];
+    }
+
+    if (beforeSendData) {
+      _options.beforeSendData = [beforeSendData];
+    }
+
+    if (afterSendData) {
+      _options.afterSendData = [afterSendData];
+    }
+    return _options;
   }
 }
 
-export let options: InitOptions;
-export function initOptions(InitOptions: InitOptions): boolean {
-  options = new Options(InitOptions);
+/**
+ * 验证必填项
+ * @param options 入参对象
+ */
+function _validateMustFill(options: InitOptions) {
+  const validateList = [
+    validateOptionMustFill(options.appName, 'appName'),
+    validateOptionMustFill(options.dsn, 'dsn'),
+  ];
+
+  return validateList.every((res) => !!res);
+}
+
+/**
+ * 验证必填项
+ * @param target 属性值
+ * @param targetName 属性名
+ * @returns 是否通过验证
+ */
+function validateOptionMustFill(target: any, targetName: string): boolean {
+  if (isEmpty(target)) {
+    logError(`【${targetName}】参数必填`);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * 验证选项的类型是否符合要求
+ * @param target 源对象
+ * @param targetName 对象名
+ * @param expectType 期望类型
+ * @returns 是否通过验证
+ */
+function validateOption(
+  target: any,
+  targetName: string,
+  expectType: string
+): boolean | void {
+  if (!target || typeofAny(target) === expectType) return true;
+  logError(
+    `TypeError:【${targetName}】期望传入${expectType}类型，目前是${typeofAny(
+      target
+    )}类型`
+  );
+  return false;
+}
+
+function _validateInitOption(options: InitOptions) {
+  const {
+    dsn,
+    appName,
+    appCode,
+    appVersion,
+    userUuid,
+    debug,
+    recordScreen,
+    error,
+    ext,
+    tracesSampleRate,
+    cacheMaxLength,
+    cacheWatingTime,
+
+    beforePushEventList,
+    beforeSendData,
+    afterSendData
+  } = options;
+
+  const validateFunList = [];
+
+  if (error && typeof error === 'object') {
+    validateFunList.push(
+      validateOption(error.core, 'error.core', 'boolean'),
+      validateOption(error.server, 'error.server', 'boolean')
+    );
+  } else {
+    validateFunList.push(validateOption(error, 'error', 'boolean'));
+  }
+
+  const validateList = [
+    validateOption(dsn, 'dsn', 'string'),
+    validateOption(appName, 'appName', 'string'),
+    validateOption(appCode, 'appCode', 'string'),
+    validateOption(appVersion, 'appVersion', 'string'),
+    validateOption(userUuid, 'userUuid', 'string'),
+    validateOption(debug, 'debug', 'boolean'),
+    validateOption(recordScreen, 'recordScreen', 'boolean'),
+    validateOption(cacheMaxLength, 'cacheMaxLength', 'number'),
+    validateOption(cacheWatingTime, 'cacheWatingTime', 'number'),
+
+    validateOption(ext, 'ext', 'object'),
+    validateOption(tracesSampleRate, 'tracesSampleRate', 'number'),
+
+    validateOption(beforePushEventList, 'beforePushEventList', 'function'),
+    validateOption(beforeSendData, 'beforeSendData', 'function'),
+    validateOption(afterSendData, 'afterSendData', 'function'),
+  ];
+
+  return (
+    validateList.every((res) => !!res) && validateFunList.every((res) => !!res)
+  );
+}
+
+export let options: InternalOptions;
+
+/**
+ * 初始化参数
+ * @param initOptions 原始参数
+ * @returns 是否初始化成功
+ */
+export function initOptions(initOptions: InitOptions): boolean {
+  // 必传校验 && 入参类型校验
+  if (!_validateMustFill(initOptions) || !_validateInitOption(initOptions))
+    return false;
+  options = new Options(initOptions);
   return true;
 }

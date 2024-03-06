@@ -101,6 +101,8 @@ export class BaseInfo {
   }
 }
 
+export let baseInfo: BaseInfo;
+
 export function initBase() {
-  new BaseInfo();
+  baseInfo = new BaseInfo();
 }

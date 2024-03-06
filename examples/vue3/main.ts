@@ -8,31 +8,16 @@ init({
   appName: 'vue3',
   appCode: 'ddd',
   debug: true,
-  beforePushEventList(data) {
-    // data 是一个数组，格式：[{}]
-    const newData = data.map((item) => {
-      if (item.eventType === 'click' && item.params) {
-        console.log('item', item);
-        item.newParams = {
-          dbname: item.params.dbname,
-          fieldname: item.params.fieldname,
-          tblname: item.params.tblname,
-        };
-        delete item.params.dbname;
-        delete item.params.fieldname;
-        delete item.params.tblname;
-      }
-      return item;
-    });
-
-    const arr = ['intersection', 'click'];
-    data.forEach((item) => {
-      if (arr.includes(item.eventType)) {
-        window.vm.sendMessage();
-      }
-    });
-
-    return newData;
+  cacheMaxLength: 10,
+  cacheWatingTime: 6000,
+  beforeSendData(data) {
+    return {
+      ...data,
+      name: 'zlzl',
+    };
+  },
+  afterSendData(data) {
+    alert('发送成功！');
   },
 });
 // let p = new Promise((resolve, reject) => {
