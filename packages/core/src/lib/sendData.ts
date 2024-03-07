@@ -1,18 +1,23 @@
-import { AnyFun, AnyObj } from '../types';
+import { AnyFun, AnyObj } from "../types";
 import {
   executeFunctions,
   getTimestamp,
+  isObjectOverSizeLimit,
   map,
   nextTime,
   randomBoolean,
+  sendByBeacon,
+  sendByImage,
+  sendByXML,
   typeofAny,
-} from '../utils';
-import { debug } from '../utils/debug';
-import { isArray, isFlase, logError } from '../utils/is';
-import { refreshSession } from '../utils/session';
-import { baseInfo } from './base';
-import { lineStatus } from './line-status';
-import { options } from './options';
+} from "../utils";
+import { debug } from "../utils/debug";
+import { _global } from "../utils/global";
+import { isArray, isFlase, logError } from "../utils/is";
+import { refreshSession } from "../utils/session";
+import { baseInfo } from "./base";
+import { lineStatus } from "./line-status";
+import { options } from "./options";
 
 export class SendData {
   private events: AnyObj[] = []; // 批次队列
@@ -44,9 +49,9 @@ export class SendData {
       sendParams
     );
     if (isFlase(afterSendParams)) return;
-    if (!this.validateObject(afterSendParams, 'beforeSendData')) return;
+    if (!this.validateObject(afterSendParams, "beforeSendData")) return;
 
-    debug('send events', afterSendParams);
+    // debug("send events", afterSendParams);
 
     this.executeSend(options.dsn, afterSendParams).then((res: any) => {
       executeFunctions(options.afterSendData, true, {
@@ -67,7 +72,41 @@ export class SendData {
    * @param data 附带参数
    */
   private executeSend(url: string, data: any) {
-    return Promise.resolve('ok')
+    console.log(data);
+    let sendType = 1;
+    if (options.sendTypeByXmlBody) {
+      // 强制指定 xml body 形式
+      sendType = 3;
+    } else if (_global.navigator) {
+      // sendBeacon 最大64kb
+      sendType = isObjectOverSizeLimit(data, 60) ? 3 : 1;
+    } else {
+      // img 限制在 2kb
+      sendType = isObjectOverSizeLimit(data, 2) ? 3 : 2;
+    }
+
+    return new Promise((resolve) => {
+      switch (sendType) {
+        case 1:
+          resolve({ sendType: "sendBeacon", success: sendByBeacon(url, data) });
+          break;
+
+        case 2:
+          sendByImage(url, data).then(() => {
+            resolve({ sendType: "image", success: true });
+          });
+          break;
+
+        case 3:
+          sendByXML(url, data).then(() => {
+            resolve({ sendType: "xml", success: true });
+          });
+          break;
+
+        default:
+          break;
+      }
+    });
   }
 
   public emit(e: AnyObj, flush = false) {
@@ -78,7 +117,7 @@ export class SendData {
 
     const eventList = executeFunctions(options.beforePushEventList, false, e);
     if (isFlase(eventList)) return;
-    if (!this.validateObject(eventList, 'beforePushEventList')) return;
+    if (!this.validateObject(eventList, "beforePushEventList")) return;
 
     this.events = this.events.concat(eventList);
     refreshSession();
@@ -108,7 +147,7 @@ export class SendData {
       );
       return false;
     }
-    if (['object', 'array'].includes(typeofAny(target))) return true;
+    if (["object", "array"].includes(typeofAny(target))) return true;
     logError(
       `TypeError: ${targetName}期望返回 {} 或者 [] 类型，目前是${typeofAny(
         target

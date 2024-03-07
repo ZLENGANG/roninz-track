@@ -1,5 +1,5 @@
-import { AnyFun, AnyObj } from '../types';
-import { isArray, isFunction, isRegExp } from './is';
+import { AnyFun, AnyObj } from "../types";
+import { isArray, isFunction, isRegExp } from "./is";
 
 /**
  * 添加事件监听器
@@ -47,7 +47,7 @@ export function replaceAop(
  * @param {*} placeholder 补全的值
  * @returns 补全后的值
  */
-export function pad(num: number, len: number, placeholder = '0') {
+export function pad(num: number, len: number, placeholder = "0") {
   const str = String(num);
   if (str.length < len) {
     let result = str;
@@ -110,7 +110,7 @@ export function getCookieByName(name: string) {
  * @returns 当前页面的url
  */
 export function getLocationHref(): string {
-  if (typeof document === 'undefined' || document.location == null) return '';
+  if (typeof document === "undefined" || document.location == null) return "";
   return document.location.href;
 }
 
@@ -219,7 +219,7 @@ export function deepAssign<T>(target: AnyObj, ...sources: AnyObj[]) {
     for (const key in source) {
       if (source[key] !== null && isRegExp(source[key])) {
         target[key] = source[key];
-      } else if (source[key] !== null && typeof source[key] === 'object') {
+      } else if (source[key] !== null && typeof source[key] === "object") {
         // 如果当前 key 对应的值是一个对象或数组，则进行递归
         target[key] = deepAssign(
           target[key] || (isArray(source[key]) ? [] : {}),
@@ -253,3 +253,131 @@ export const nextTime =
   window.requestIdleCallback ||
   window.requestAnimationFrame ||
   ((callback) => setTimeout(callback, 17));
+
+/**
+ * 判断对象是否超过指定kb大小
+ * @param object 源对象
+ * @param limitInKB 最大kb
+ */
+export function isObjectOverSizeLimit(
+  object: object,
+  limitInKB: number
+): boolean {
+  const serializedObject = JSON.stringify(object);
+  const sizeInBytes = new TextEncoder().encode(serializedObject).length;
+  const sizeInKB = sizeInBytes / 1024;
+  return sizeInKB > limitInKB;
+}
+
+/**
+ * 发送数据方式 - navigator.sendBeacon
+ */
+export function sendByBeacon(url: string, data: any) {
+  return navigator.sendBeacon(url, JSON.stringify(data));
+}
+
+/**
+ * 发送数据方式 - image
+ */
+export function sendByImage(url: string, data: any): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.src = `${url}?v=${encodeURIComponent(JSON.stringify(data))}`;
+
+    image.onload = () => {
+      resolve();
+    };
+    image.onerror = () => {
+      reject();
+    };
+  });
+}
+
+/**
+ * 发送数据方式 - xml
+ */
+export function sendByXML(url: string, data: any): Promise<void> {
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("post", url);
+    xhr.setRequestHeader("content-type", "application/json");
+    xhr.send(JSON.stringify(data));
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        resolve();
+      }
+    };
+  });
+}
+
+/**
+ * 函数节流
+ * @param fn 需要节流的函数
+ * @param delay 节流的时间间隔
+ * @param runFirst 是否需要第一个函数立即执行 (每次)
+ * @returns 返回一个包含节流功能的函数
+ */
+export function throttle(func: AnyFun, wait: number, runFirst = false) {
+  let timer: any = null;
+  let lastArgs: any[];
+
+  return function (this: any, ...args: any[]) {
+    lastArgs = args;
+
+    if (timer === null) {
+      if (runFirst) {
+        func.apply(this, lastArgs);
+      }
+      timer = setTimeout(() => {
+        timer = null;
+        func.apply(this, lastArgs);
+      }, wait);
+    }
+  };
+}
+
+/**
+ * 函数防抖
+ * @param func 需要防抖的函数
+ * @param wait 防抖的时间间隔
+ * @param runFirst 是否需要第一个函数立即执行
+ * @returns 返回一个包含防抖功能的函数
+ */
+export function debounce(func: AnyFun, wait: number, runFirst = false) {
+  let timer: any = null;
+
+  return function (this: any, ...arg: any[]) {
+    if (runFirst) {
+      func.call(this, ...arg);
+      runFirst = false;
+    }
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.call(this, ...arg);
+    }, wait);
+  };
+}
+
+/**
+ * 将数组内对象以对象内的属性分类
+ * @param arr 数组源 - 格式为 [{}, {}...]
+ * @param keys 需要匹配的属性名
+ */
+export function groupArray<T, K extends keyof T>(
+  arr: T[],
+  ...keys: K[]
+): T[][] {
+  const group = new Map<string, T[]>();
+  for (const obj of arr) {
+    const key = keys
+      .filter((k) => obj[k])
+      .map((k) => obj[k])
+      .join(":");
+
+    if (!group.has(key)) {
+      group.set(key, []);
+    }
+    group.get(key)?.push(obj);
+  }
+  return Array.from(group.values());
+}

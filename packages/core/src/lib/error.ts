@@ -1,12 +1,13 @@
-import { EVENTTYPES, SEDNEVENTTYPES, SENDID } from '../common/constant';
-import { RecordEventScope } from '../types';
-import { filter, getLocationHref, getTimestamp, map } from '../utils';
-import { _global } from '../utils/global';
-import { isArray } from '../utils/is';
-import { eventBus } from './eventBus';
-import { options } from './options';
-import { getEventList, zip } from './recordscreen';
-import { sendData } from './sendData';
+import { EVENTTYPES, SEDNEVENTTYPES, SENDID } from "../common/constant";
+import { RecordEventScope } from "../types";
+import { filter, getLocationHref, getTimestamp, map } from "../utils";
+import { _global } from "../utils/global";
+import { isArray } from "../utils/is";
+import { batchError, initBatchError } from "./error-batch";
+import { eventBus } from "./eventBus";
+import { options } from "./options";
+import { getEventList, zip } from "./recordscreen";
+import { sendData } from "./sendData";
 
 type InstabilityNature = {
   lineNumber: string;
@@ -19,7 +20,7 @@ type InstabilityNature = {
  * @param err Error 错误对象
  */
 function parseStack(err: Error) {
-  const { stack = '', message = '' } = err;
+  const { stack = "", message = "" } = err;
   const result = { eventId: SENDID.CODE, errMessage: message, errStack: stack };
 
   if (stack) {
@@ -28,11 +29,11 @@ function parseStack(err: Error) {
     // chrome中包含了message信息,将其去除,并去除后面的换行符
     const callStackStr = stack.replace(
       new RegExp(`^[\\w\\s:]*${message}\n`),
-      ''
+      ""
     );
 
     const callStackFrameList = map(
-      filter(callStackStr.split('\n'), (item: string) => item),
+      filter(callStackStr.split("\n"), (item: string) => item),
       (str: string) => {
         const chromeErrResult = str.match(rChromeCallStack);
         if (chromeErrResult) {
@@ -86,7 +87,7 @@ function parseError(e: any) {
   }
 
   // reject 错误
-  if (typeof e === 'string') {
+  if (typeof e === "string") {
     return {
       eventId: SENDID.REJECT,
       errMessage: e,
@@ -95,7 +96,7 @@ function parseError(e: any) {
 
   // console.error 暴露的错误
   if (isArray(e))
-    return { eventId: SENDID.CONSOLEERROR, errMessage: e.join(';') };
+    return { eventId: SENDID.CONSOLEERROR, errMessage: e.join(";") };
 
   return {};
 }
@@ -127,10 +128,10 @@ function parseErrorEvent(event: ErrorEvent | PromiseRejectedResult) {
       const result = {
         initiatorType: target.nodeName.toLowerCase(),
         eventId: SENDID.RESOURCE,
-        requestUrl: '',
+        requestUrl: "",
       };
       switch (target.nodeName.toLowerCase()) {
-        case 'link':
+        case "link":
           result.requestUrl = (target as HTMLLinkElement).href;
           break;
         default:
@@ -183,16 +184,21 @@ function emit(errorInfo: any, flush = false) {
     eventType: SEDNEVENTTYPES.ERROR,
     recordscreen: options.recordScreen ? zip(getRecordEvent()) : null,
     triggerPageUrl: getLocationHref(),
-    triggerTime: getTimestamp()
+    triggerTime: getTimestamp(),
   };
-  console.log(info);
-  
-  sendData.emit(info, flush)
+
+  options.scopeError
+    ? batchError.pushCacheErrorA(info)
+    : sendData.emit(info, flush);
 }
 
 export function initError() {
   //@ts-ignore
   if (!options.error?.core) return;
+
+  if (options.scopeError) {
+    initBatchError();
+  }
 
   eventBus.addEvent({
     type: EVENTTYPES.ERROR,
@@ -204,8 +210,9 @@ export function initError() {
 
   eventBus.addEvent({
     type: EVENTTYPES.UNHANDLEDREJECTION,
-    callback: (e: PromiseRejectionEvent) => {
+    callback: (e: PromiseRejectedResult) => {
       const errorInfo = parseErrorEvent(e);
+      emit(errorInfo);
     },
   });
 
@@ -213,7 +220,7 @@ export function initError() {
     type: EVENTTYPES.CONSOLEERROR,
     callback: (e: any) => {
       const errorInfo = parseError(e);
-      console.log(errorInfo);
+      emit(errorInfo);
     },
   });
 }

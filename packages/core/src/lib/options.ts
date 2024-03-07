@@ -1,18 +1,20 @@
-import { AnyFun, InitOptions, InternalOptions } from '../types';
-import { deepAssign, typeofAny } from '../utils';
-import { isEmpty, logError } from '../utils/is';
+import { AnyFun, InitOptions, InternalOptions } from "../types";
+import { deepAssign, typeofAny } from "../utils";
+import { isEmpty, logError } from "../utils/is";
 
 export class Options implements InternalOptions {
-  dsn = ''; // 上报地址
-  appName = ''; // 应用名称
-  appCode = ''; // 应用code
-  appVersion = '';
+  dsn = ""; // 上报地址
+  appName = ""; // 应用名称
+  appCode = ""; // 应用code
+  appVersion = "";
   debug = false;
   recordScreen = true;
   tracesSampleRate = 1;
-  userUuid = '';
+  userUuid = "";
   cacheMaxLength = 5;
   cacheWatingTime = 5000;
+  sendTypeByXmlBody = false;
+  scopeError = false;
 
   error = {
     core: true,
@@ -37,7 +39,7 @@ export class Options implements InternalOptions {
     const { error } = _options;
     const { beforePushEventList, beforeSendData, afterSendData } = options;
 
-    if (typeof error === 'boolean') {
+    if (typeof error === "boolean") {
       _options.error = {
         core: error,
         server: error,
@@ -65,8 +67,8 @@ export class Options implements InternalOptions {
  */
 function _validateMustFill(options: InitOptions) {
   const validateList = [
-    validateOptionMustFill(options.appName, 'appName'),
-    validateOptionMustFill(options.dsn, 'dsn'),
+    validateOptionMustFill(options.appName, "appName"),
+    validateOptionMustFill(options.dsn, "dsn"),
   ];
 
   return validateList.every((res) => !!res);
@@ -121,40 +123,44 @@ function _validateInitOption(options: InitOptions) {
     tracesSampleRate,
     cacheMaxLength,
     cacheWatingTime,
+    sendTypeByXmlBody,
+    scopeError,
 
     beforePushEventList,
     beforeSendData,
-    afterSendData
+    afterSendData,
   } = options;
 
   const validateFunList = [];
 
-  if (error && typeof error === 'object') {
+  if (error && typeof error === "object") {
     validateFunList.push(
-      validateOption(error.core, 'error.core', 'boolean'),
-      validateOption(error.server, 'error.server', 'boolean')
+      validateOption(error.core, "error.core", "boolean"),
+      validateOption(error.server, "error.server", "boolean")
     );
   } else {
-    validateFunList.push(validateOption(error, 'error', 'boolean'));
+    validateFunList.push(validateOption(error, "error", "boolean"));
   }
 
   const validateList = [
-    validateOption(dsn, 'dsn', 'string'),
-    validateOption(appName, 'appName', 'string'),
-    validateOption(appCode, 'appCode', 'string'),
-    validateOption(appVersion, 'appVersion', 'string'),
-    validateOption(userUuid, 'userUuid', 'string'),
-    validateOption(debug, 'debug', 'boolean'),
-    validateOption(recordScreen, 'recordScreen', 'boolean'),
-    validateOption(cacheMaxLength, 'cacheMaxLength', 'number'),
-    validateOption(cacheWatingTime, 'cacheWatingTime', 'number'),
+    validateOption(dsn, "dsn", "string"),
+    validateOption(appName, "appName", "string"),
+    validateOption(appCode, "appCode", "string"),
+    validateOption(appVersion, "appVersion", "string"),
+    validateOption(userUuid, "userUuid", "string"),
+    validateOption(debug, "debug", "boolean"),
+    validateOption(recordScreen, "recordScreen", "boolean"),
+    validateOption(cacheMaxLength, "cacheMaxLength", "number"),
+    validateOption(cacheWatingTime, "cacheWatingTime", "number"),
 
-    validateOption(ext, 'ext', 'object'),
-    validateOption(tracesSampleRate, 'tracesSampleRate', 'number'),
+    validateOption(ext, "ext", "object"),
+    validateOption(tracesSampleRate, "tracesSampleRate", "number"),
+    validateOption(sendTypeByXmlBody, "sendTypeByXmlBody", "boolean"),
+    validateOption(scopeError, "scopeError", "boolean"),
 
-    validateOption(beforePushEventList, 'beforePushEventList', 'function'),
-    validateOption(beforeSendData, 'beforeSendData', 'function'),
-    validateOption(afterSendData, 'afterSendData', 'function'),
+    validateOption(beforePushEventList, "beforePushEventList", "function"),
+    validateOption(beforeSendData, "beforeSendData", "function"),
+    validateOption(afterSendData, "afterSendData", "function"),
   ];
 
   return (
