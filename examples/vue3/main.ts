@@ -10,7 +10,8 @@ init({
   debug: true,
   cacheMaxLength: 10,
   cacheWatingTime: 6000,
-  // scopeError: true,
+  scopeError: true,
+  event:true,
   beforeSendData(data) {
     return {
       ...data,

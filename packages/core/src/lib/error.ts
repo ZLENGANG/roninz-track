@@ -1,13 +1,13 @@
-import { EVENTTYPES, SEDNEVENTTYPES, SENDID } from "../common/constant";
-import { RecordEventScope } from "../types";
-import { filter, getLocationHref, getTimestamp, map } from "../utils";
-import { _global } from "../utils/global";
-import { isArray } from "../utils/is";
-import { batchError, initBatchError } from "./error-batch";
-import { eventBus } from "./eventBus";
-import { options } from "./options";
-import { getEventList, zip } from "./recordscreen";
-import { sendData } from "./sendData";
+import { EVENTTYPES, SEDNEVENTTYPES, SENDID } from '../common/constant';
+import { RecordEventScope } from '../types';
+import { filter, getLocationHref, getTimestamp, map } from '../utils';
+import { _global } from '../utils/global';
+import { isArray } from '../utils/is';
+import { batchError, initBatchError } from './error-batch';
+import { eventBus } from './eventBus';
+import { options } from './options';
+import { getEventList, zip } from './recordscreen';
+import { sendData } from './sendData';
 
 type InstabilityNature = {
   lineNumber: string;
@@ -20,7 +20,7 @@ type InstabilityNature = {
  * @param err Error 错误对象
  */
 function parseStack(err: Error) {
-  const { stack = "", message = "" } = err;
+  const { stack = '', message = '' } = err;
   const result = { eventId: SENDID.CODE, errMessage: message, errStack: stack };
 
   if (stack) {
@@ -29,11 +29,11 @@ function parseStack(err: Error) {
     // chrome中包含了message信息,将其去除,并去除后面的换行符
     const callStackStr = stack.replace(
       new RegExp(`^[\\w\\s:]*${message}\n`),
-      ""
+      ''
     );
 
     const callStackFrameList = map(
-      filter(callStackStr.split("\n"), (item: string) => item),
+      filter(callStackStr.split('\n'), (item: string) => item),
       (str: string) => {
         const chromeErrResult = str.match(rChromeCallStack);
         if (chromeErrResult) {
@@ -87,7 +87,7 @@ function parseError(e: any) {
   }
 
   // reject 错误
-  if (typeof e === "string") {
+  if (typeof e === 'string') {
     return {
       eventId: SENDID.REJECT,
       errMessage: e,
@@ -96,7 +96,7 @@ function parseError(e: any) {
 
   // console.error 暴露的错误
   if (isArray(e))
-    return { eventId: SENDID.CONSOLEERROR, errMessage: e.join(";") };
+    return { eventId: SENDID.CONSOLEERROR, errMessage: e.join(';') };
 
   return {};
 }
@@ -128,10 +128,10 @@ function parseErrorEvent(event: ErrorEvent | PromiseRejectedResult) {
       const result = {
         initiatorType: target.nodeName.toLowerCase(),
         eventId: SENDID.RESOURCE,
-        requestUrl: "",
+        requestUrl: '',
       };
       switch (target.nodeName.toLowerCase()) {
-        case "link":
+        case 'link':
           result.requestUrl = (target as HTMLLinkElement).href;
           break;
         default:
@@ -198,6 +198,14 @@ export function initError() {
 
   if (options.scopeError) {
     initBatchError();
+
+    // 如果开启了检测批量错误 则要挂载卸载事件以防缓存池内的错误丢失
+    eventBus.addEvent({
+      type: EVENTTYPES.BEFOREUNLOAD,
+      callback: () => {
+        batchError.sendAllCacheError();
+      },
+    });
   }
 
   eventBus.addEvent({

@@ -1,5 +1,5 @@
 import { EVENTTYPES } from '../common/constant';
-import { isValidKey, on, replaceAop } from '../utils';
+import { isValidKey, on, replaceAop, throttle } from '../utils';
 import { _global } from '../utils/global';
 import { eventBus } from './eventBus';
 
@@ -25,6 +25,14 @@ function replace(type: EVENTTYPES) {
       replaceConsoleError(EVENTTYPES.CONSOLEERROR);
       break;
 
+    case EVENTTYPES.CLICK:
+      listenClick(EVENTTYPES.CLICK);
+      break;
+
+    case EVENTTYPES.BEFOREUNLOAD:
+      listenBeforeunload(EVENTTYPES.BEFOREUNLOAD);
+      break;
+
     case EVENTTYPES.OFFLINE:
       listenOffline(EVENTTYPES.OFFLINE);
       break;
@@ -36,6 +44,36 @@ function replace(type: EVENTTYPES) {
     default:
       break;
   }
+}
+
+/**
+ * 监听 - click
+ */
+function listenClick(type: EVENTTYPES): void {
+  if (!('document' in _global)) return
+  const clickThrottle = throttle(eventBus.runEvent, 100, false)
+  on(
+    _global.document,
+    'click',
+    function (this: any, e: MouseEvent) {
+      clickThrottle.call(eventBus, type, e)
+    },
+    true
+  )
+}
+
+/**
+ * 监听 - beforeunload
+ */
+function listenBeforeunload(type: EVENTTYPES) {
+  on(
+    _global,
+    'beforeunload',
+    function (e: BeforeUnloadEvent) {
+      eventBus.runEvent(type, e);
+    },
+    false
+  );
 }
 
 /**

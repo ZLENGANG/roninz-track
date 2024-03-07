@@ -1,14 +1,16 @@
 <template>
-  <button @click="error('code')">代码错误</button>
-  <button @click="error('promise')">promise错误</button>
-  <button @click="error('console')">console.error错误</button>
+  <div style="background-color: #282828;height: 1000px;">
+    <button @click="error('code')">代码错误</button>
+    <button @click="error('promise')">promise错误</button>
+    <button @click="error('console')">console.error错误</button>
 
-  <hr />
+    <hr />
 
-  <button @click="add('link')">插入link</button>
-  <button @click="add('script')">插入script</button>
-  <button @click="add('img')">插入img</button>
-  <button @click="add('video')">插入video</button>
+    <button @click="add('link')">插入link</button>
+    <button @click="add('script')">插入script</button>
+    <button @click="add('img')">插入img</button>
+    <button @click="add('video')">插入video</button>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -65,4 +67,9 @@ function add(type: string) {
 }
 </script>
 
-<style></style>
+<style>
+*{
+  margin: 0;
+  padding: 0;
+}
+</style>

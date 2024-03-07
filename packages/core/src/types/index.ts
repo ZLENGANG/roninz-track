@@ -3,6 +3,10 @@ interface Error {
   server?: boolean; // 是否采集报错接口数据
 }
 
+interface Event {
+  core?: boolean; // 是否采集点击事件
+}
+
 export type InternalOptions = {
   /**上报地址 */
   dsn: string;
@@ -43,6 +47,9 @@ export type InternalOptions = {
 
   // 当某个时间段报错时，会将此类错误转为特殊错误类型，会新增错误持续时间范围
   scopeError: boolean;
+
+  /**是否开启点击事件 */
+  event: Event;
 
   // 添加到行为列表前的 hook (在这里面可以给出错误类型，然后就能达到用户想拿到是何种事件类型的触发)
   beforePushEventList: AnyFun[];
@@ -94,6 +101,9 @@ export type InitOptions = {
 
   // 当某个时间段报错时，会将此类错误转为特殊错误类型，会新增错误持续时间范围
   scopeError?: boolean;
+
+  /**是否开启点击事件 */
+  event?: Event | boolean;
 
   // 添加到行为列表前的 hook (在这里面可以给出错误类型，然后就能达到用户想拿到是何种事件类型的触发)
   beforePushEventList?: AnyFun;
