@@ -1,7 +1,7 @@
-import { EVENTTYPES } from '../common/constant';
-import { isValidKey, on, replaceAop, throttle } from '../utils';
-import { _global } from '../utils/global';
-import { eventBus } from './eventBus';
+import { EVENTTYPES } from "../common/constant";
+import { isValidKey, on, replaceAop, throttle } from "../utils";
+import { _global } from "../utils/global";
+import { eventBus } from "./eventBus";
 
 export function initReplace() {
   for (const key in EVENTTYPES) {
@@ -50,16 +50,17 @@ function replace(type: EVENTTYPES) {
  * 监听 - click
  */
 function listenClick(type: EVENTTYPES): void {
-  if (!('document' in _global)) return
-  const clickThrottle = throttle(eventBus.runEvent, 100, false)
+  if (!("document" in _global)) return;
+  const clickThrottle = throttle(eventBus.runEvent, 100, true);
   on(
     _global.document,
-    'click',
+    "click",
     function (this: any, e: MouseEvent) {
-      clickThrottle.call(eventBus, type, e)
+      // clickThrottle.call(eventBus, type, e)
+      eventBus.runEvent(type, e);
     },
     true
-  )
+  );
 }
 
 /**
@@ -68,7 +69,7 @@ function listenClick(type: EVENTTYPES): void {
 function listenBeforeunload(type: EVENTTYPES) {
   on(
     _global,
-    'beforeunload',
+    "beforeunload",
     function (e: BeforeUnloadEvent) {
       eventBus.runEvent(type, e);
     },
@@ -82,7 +83,7 @@ function listenBeforeunload(type: EVENTTYPES) {
 function listenError(type: EVENTTYPES) {
   on(
     _global,
-    'error',
+    "error",
     function (e: ErrorEvent) {
       eventBus.runEvent(type, e);
     },
@@ -94,7 +95,7 @@ function listenError(type: EVENTTYPES) {
  * 监听 - unhandledrejection（promise异常）
  */
 function listenUnhandledRejection(type: EVENTTYPES): void {
-  on(_global, 'unhandledrejection', function (ev: PromiseRejectionEvent) {
+  on(_global, "unhandledrejection", function (ev: PromiseRejectionEvent) {
     // ev.preventDefault() 阻止默认行为后，控制台就不会再报红色错误
     eventBus.runEvent(type, ev);
   });
@@ -104,7 +105,7 @@ function listenUnhandledRejection(type: EVENTTYPES): void {
  * 重写 - console.error
  */
 function replaceConsoleError(type: EVENTTYPES) {
-  replaceAop(console, 'error', (originalError) => {
+  replaceAop(console, "error", (originalError) => {
     return function (this: any, ...args: any[]) {
       eventBus.runEvent(type, args);
       originalError.apply(this, args);
@@ -118,7 +119,7 @@ function replaceConsoleError(type: EVENTTYPES) {
 function listenOnline(type: EVENTTYPES): void {
   on(
     _global,
-    'online',
+    "online",
     function (e: Event) {
       eventBus.runEvent(type, e);
     },
@@ -132,7 +133,7 @@ function listenOnline(type: EVENTTYPES): void {
 function listenOffline(type: EVENTTYPES): void {
   on(
     _global,
-    'offline',
+    "offline",
     function (e: Event) {
       eventBus.runEvent(type, e);
     },

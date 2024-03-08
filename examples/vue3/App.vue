@@ -1,31 +1,80 @@
 <template>
-  <div style="background-color: #282828;height: 1000px;">
-    <button @click="error('code')">代码错误</button>
-    <button @click="error('promise')">promise错误</button>
-    <button @click="error('console')">console.error错误</button>
+  <button track-contaier="容器btn">
+    <span>点我</span>
+  </button>
+  <div style="background-color: #282828; height: 1000px" track-contaier="容器">
+    <div class="zlzl">
+      <button @click="error('code')">代码错误</button>
+      <button @click="error('promise')">promise错误</button>
+      <button @click="error('console')">console.error错误</button>
 
-    <hr />
+      <hr />
 
-    <button @click="add('link')">插入link</button>
-    <button @click="add('script')">插入script</button>
-    <button @click="add('img')">插入img</button>
-    <button @click="add('video')">插入video</button>
+      <button @click="add('link')" track-title="我是title">插入link</button>
+      <button @click="add('script')">插入script</button>
+      <button @click="add('img')">插入img</button>
+      <button @click="add('video')">插入video</button>
+    </div>
   </div>
+  <div
+    style="
+      width: 100px;
+      height: 100px;
+      background-color: yellowgreen;
+      position: absolute;
+      right: 0;
+      top: 0;
+    "
+    track-contaier="容器1"
+  ></div>
+
+  <img
+    track-contaier="容器2"
+    src="https://th.bing.com/th/id/R.de7e1dcf98e725ab765c0b61478d8ff5?rik=7yqie%2fa32j2uxA&riu=http%3a%2f%2fb.zol-img.com.cn%2fdesk%2fbizhi%2fstart%2f3%2f1368604511486.jpg&ehk=JGWbrH30aClk4HeRboH7w99%2fMOhMX5m%2f7KepEepxVPE%3d&risl=&pid=ImgRaw&r=0"
+    alt="dddd"
+    srcset=""
+  />
+
+  <svg
+    track-contaier="容器3"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    aria-hidden="true"
+    role="img"
+    class="iconify iconify--logos"
+    width="37.07"
+    height="36"
+    preserveAspectRatio="xMidYMid meet"
+    viewBox="0 0 256 198"
+  >
+    <path
+      fill="#41B883"
+      d="M204.8 0H256L128 220.8L0 0h97.92L128 51.2L157.44 0h47.36Z"
+    ></path>
+    <path
+      fill="#41B883"
+      d="m0 0l128 220.8L256 0h-51.2L128 132.48L50.56 0H0Z"
+    ></path>
+    <path
+      fill="#35495E"
+      d="M50.56 0L128 133.12L204.8 0h-47.36L128 51.2L97.92 0H50.56Z"
+    ></path>
+  </svg>
 </template>
 
 <script setup lang="ts">
 function error(type: string) {
   switch (type) {
-    case 'code':
+    case "code":
       console.log(a);
       break;
-    case 'promise':
+    case "promise":
       new Promise((resolve, reject) => {
-        reject('promise error');
+        reject("promise error");
       });
       break;
-    case 'console':
-      console.error('console error');
+    case "console":
+      console.error("console error");
       break;
 
     default:
@@ -35,29 +84,29 @@ function error(type: string) {
 
 function add(type: string) {
   switch (type) {
-    case 'link':
-      const link = document.createElement('link');
-      link.type = 'text/css';
-      link.rel = 'stylesheet';
-      link.href = 'https://dasdasdasd';
+    case "link":
+      const link = document.createElement("link");
+      link.type = "text/css";
+      link.rel = "stylesheet";
+      link.href = "https://dasdasdasd";
       document.head.appendChild(link);
       break;
 
-    case 'script':
-      const script = document.createElement('script');
-      script.src = 'https://dfasf';
+    case "script":
+      const script = document.createElement("script");
+      script.src = "https://dfasf";
       document.head.appendChild(script);
       break;
 
-    case 'img':
-      const img = document.createElement('img');
-      img.src = 'https://dasdasdasd';
+    case "img":
+      const img = document.createElement("img");
+      img.src = "https://dasdasdasd";
       document.body.appendChild(img);
       break;
 
-    case 'video':
-      const video = document.createElement('video');
-      video.src = 'https://dasdasdasd';
+    case "video":
+      const video = document.createElement("video");
+      video.src = "https://dasdasdasd";
       document.body.appendChild(video);
       break;
 
@@ -68,7 +117,7 @@ function add(type: string) {
 </script>
 
 <style>
-*{
+* {
   margin: 0;
   padding: 0;
 }
