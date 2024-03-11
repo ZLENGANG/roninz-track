@@ -1,8 +1,8 @@
-import { EVENTTYPES } from "../common/constant";
-import { VoidFun } from "../types";
-import { getTimestamp, isValidKey, on, replaceAop, throttle } from "../utils";
-import { _global } from "../utils/global";
-import { eventBus } from "./eventBus";
+import { EVENTTYPES } from '../common/constant';
+import { VoidFun } from '../types';
+import { getTimestamp, isValidKey, on, replaceAop, throttle } from '../utils';
+import { _global } from '../utils/global';
+import { eventBus } from './eventBus';
 
 export function initReplace() {
   for (const key in EVENTTYPES) {
@@ -46,6 +46,10 @@ function replace(type: EVENTTYPES) {
       replaceFetch(EVENTTYPES.FETCH);
       break;
 
+    case EVENTTYPES.LOAD:
+      listenLoad(EVENTTYPES.LOAD);
+      break;
+
     case EVENTTYPES.OFFLINE:
       listenOffline(EVENTTYPES.OFFLINE);
       break;
@@ -60,11 +64,25 @@ function replace(type: EVENTTYPES) {
 }
 
 /**
+ * 监听 - load
+ */
+function listenLoad(type: EVENTTYPES): void {
+  on(
+    _global,
+    'load',
+    function (e: Event) {
+      eventBus.runEvent(type, e);
+    },
+    true
+  );
+}
+
+/**
  * 重写 - fetch
  */
 function replaceFetch(type: EVENTTYPES): void {
-  if (!("fetch" in _global)) return;
-  replaceAop(_global, "fetch", (originalFetch) => {
+  if (!('fetch' in _global)) return;
+  replaceAop(_global, 'fetch', (originalFetch) => {
     return function (this: any, ...args: any[]): void {
       const fetchStart = getTimestamp();
       return originalFetch.apply(_global, args).then((res: any) => {
@@ -79,8 +97,8 @@ function replaceFetch(type: EVENTTYPES): void {
  * 重写 - XHR-send
  */
 function replaceXHRSend(type: EVENTTYPES): void {
-  if (!("XMLHttpRequest" in _global)) return;
-  replaceAop(XMLHttpRequest.prototype, "send", (originalSend: VoidFun) => {
+  if (!('XMLHttpRequest' in _global)) return;
+  replaceAop(XMLHttpRequest.prototype, 'send', (originalSend: VoidFun) => {
     return function (this: any, ...args: any[]): void {
       eventBus.runEvent(type, this, ...args);
       originalSend.apply(this, args);
@@ -92,8 +110,8 @@ function replaceXHRSend(type: EVENTTYPES): void {
  * 重写 - XHR-open
  */
 function replaceXHROpen(type: EVENTTYPES): void {
-  if (!("XMLHttpRequest" in _global)) return;
-  replaceAop(XMLHttpRequest.prototype, "open", (originalOpen: VoidFun) => {
+  if (!('XMLHttpRequest' in _global)) return;
+  replaceAop(XMLHttpRequest.prototype, 'open', (originalOpen: VoidFun) => {
     return function (this: any, ...args: any[]): void {
       eventBus.runEvent(type, ...args);
       originalOpen.apply(this, args);
@@ -105,11 +123,11 @@ function replaceXHROpen(type: EVENTTYPES): void {
  * 监听 - click
  */
 function listenClick(type: EVENTTYPES): void {
-  if (!("document" in _global)) return;
+  if (!('document' in _global)) return;
   const clickThrottle = throttle(eventBus.runEvent, 100, true);
   on(
     _global.document,
-    "click",
+    'click',
     function (this: any, e: MouseEvent) {
       // clickThrottle.call(eventBus, type, e)
       eventBus.runEvent(type, e);
@@ -124,7 +142,7 @@ function listenClick(type: EVENTTYPES): void {
 function listenBeforeunload(type: EVENTTYPES) {
   on(
     _global,
-    "beforeunload",
+    'beforeunload',
     function (e: BeforeUnloadEvent) {
       eventBus.runEvent(type, e);
     },
@@ -138,7 +156,7 @@ function listenBeforeunload(type: EVENTTYPES) {
 function listenError(type: EVENTTYPES) {
   on(
     _global,
-    "error",
+    'error',
     function (e: ErrorEvent) {
       eventBus.runEvent(type, e);
     },
@@ -150,7 +168,7 @@ function listenError(type: EVENTTYPES) {
  * 监听 - unhandledrejection（promise异常）
  */
 function listenUnhandledRejection(type: EVENTTYPES): void {
-  on(_global, "unhandledrejection", function (ev: PromiseRejectionEvent) {
+  on(_global, 'unhandledrejection', function (ev: PromiseRejectionEvent) {
     // ev.preventDefault() 阻止默认行为后，控制台就不会再报红色错误
     eventBus.runEvent(type, ev);
   });
@@ -160,7 +178,7 @@ function listenUnhandledRejection(type: EVENTTYPES): void {
  * 重写 - console.error
  */
 function replaceConsoleError(type: EVENTTYPES) {
-  replaceAop(console, "error", (originalError) => {
+  replaceAop(console, 'error', (originalError) => {
     return function (this: any, ...args: any[]) {
       eventBus.runEvent(type, args);
       originalError.apply(this, args);
@@ -174,7 +192,7 @@ function replaceConsoleError(type: EVENTTYPES) {
 function listenOnline(type: EVENTTYPES): void {
   on(
     _global,
-    "online",
+    'online',
     function (e: Event) {
       eventBus.runEvent(type, e);
     },
@@ -188,7 +206,7 @@ function listenOnline(type: EVENTTYPES): void {
 function listenOffline(type: EVENTTYPES): void {
   on(
     _global,
-    "offline",
+    'offline',
     function (e: Event) {
       eventBus.runEvent(type, e);
     },
