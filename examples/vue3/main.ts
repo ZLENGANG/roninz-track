@@ -11,7 +11,8 @@ init({
   cacheMaxLength: 10,
   cacheWatingTime: 6000,
   scopeError: true,
-  event:true,
+  event: true,
+  performance: true,
   beforeSendData(data) {
     return {
       ...data,

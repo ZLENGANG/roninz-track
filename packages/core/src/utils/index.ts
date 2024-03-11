@@ -381,3 +381,23 @@ export function groupArray<T, K extends keyof T>(
   }
   return Array.from(group.values());
 }
+
+/**
+ * 获取url地址上的参数
+ * @param url 请求url
+ * @returns 参数对象
+ */
+export function parseGetParams(url: string): AnyObj<string> {
+  const params: AnyObj<string> = {};
+  const query = url.split("?")[1];
+
+  if (query) {
+    const pairs = query.split("&");
+    for (let pair of pairs) {
+      const [key, value] = pair.split("=");
+      params[decodeURIComponent(key)] = decodeURIComponent(value);
+    }
+  }
+
+  return params;
+}

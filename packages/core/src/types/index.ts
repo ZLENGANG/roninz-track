@@ -7,6 +7,12 @@ interface Event {
   core?: boolean; // 是否采集点击事件
 }
 
+interface Performance {
+  core?: boolean; // 是否采集静态资源、接口的相关数据
+  firstResource?: boolean; // 是否采集首次进入页面的数据
+  server?: boolean; // 是否采集接口请求
+}
+
 export type InternalOptions = {
   /**上报地址 */
   dsn: string;
@@ -50,6 +56,8 @@ export type InternalOptions = {
 
   /**是否开启点击事件 */
   event: Event;
+
+  performance: Performance;
 
   // 添加到行为列表前的 hook (在这里面可以给出错误类型，然后就能达到用户想拿到是何种事件类型的触发)
   beforePushEventList: AnyFun[];
@@ -105,6 +113,8 @@ export type InitOptions = {
   /**是否开启点击事件 */
   event?: Event | boolean;
 
+  performance?: Performance | boolean;
+
   // 添加到行为列表前的 hook (在这里面可以给出错误类型，然后就能达到用户想拿到是何种事件类型的触发)
   beforePushEventList?: AnyFun;
 
@@ -127,3 +137,7 @@ export interface RecordEventScope {
   scope: string;
   eventList: any[];
 }
+
+export type VoidFun = {
+  (...args: any[]): void;
+};

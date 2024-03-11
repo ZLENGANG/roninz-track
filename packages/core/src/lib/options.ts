@@ -1,16 +1,16 @@
-import { AnyFun, InitOptions, InternalOptions } from '../types';
-import { deepAssign, typeofAny } from '../utils';
-import { isEmpty, logError } from '../utils/is';
+import { AnyFun, InitOptions, InternalOptions } from "../types";
+import { deepAssign, typeofAny } from "../utils";
+import { isEmpty, logError } from "../utils/is";
 
 export class Options implements InternalOptions {
-  dsn = ''; // 上报地址
-  appName = ''; // 应用名称
-  appCode = ''; // 应用code
-  appVersion = '';
+  dsn = ""; // 上报地址
+  appName = ""; // 应用名称
+  appCode = ""; // 应用code
+  appVersion = "";
   debug = false;
   recordScreen = true;
   tracesSampleRate = 1;
-  userUuid = '';
+  userUuid = "";
   cacheMaxLength = 5;
   cacheWatingTime = 5000;
   sendTypeByXmlBody = false;
@@ -23,6 +23,12 @@ export class Options implements InternalOptions {
 
   event = {
     core: false,
+  };
+
+  performance = {
+    core: false, // 性能数据-是否采集静态资源、接口的相关数据
+    firstResource: false, // 性能数据-是否采集首次进入页面的数据(ps: tcp连接耗时,HTML加载完成时间,首次可交互时间)
+    server: false, // 接口请求-是否采集接口请求(成功的才会采集)
   };
 
   ext = {};
@@ -41,19 +47,27 @@ export class Options implements InternalOptions {
    */
   private transitionOptions(options: InitOptions): Options {
     const _options = deepAssign<Options>({}, this, options);
-    const { error, event } = _options;
+    const { error, event, performance } = _options;
     const { beforePushEventList, beforeSendData, afterSendData } = options;
 
-    if (typeof error === 'boolean') {
+    if (typeof error === "boolean") {
       _options.error = {
         core: error,
         server: error,
       };
     }
 
-    if (typeof event === 'boolean') {
+    if (typeof event === "boolean") {
       _options.event = {
         core: event,
+      };
+    }
+
+    if (typeof performance === "boolean") {
+      _options.performance = {
+        core: performance,
+        firstResource: performance,
+        server: performance,
       };
     }
 
@@ -78,8 +92,8 @@ export class Options implements InternalOptions {
  */
 function _validateMustFill(options: InitOptions) {
   const validateList = [
-    validateOptionMustFill(options.appName, 'appName'),
-    validateOptionMustFill(options.dsn, 'dsn'),
+    validateOptionMustFill(options.appName, "appName"),
+    validateOptionMustFill(options.dsn, "dsn"),
   ];
 
   return validateList.every((res) => !!res);
@@ -137,6 +151,7 @@ function _validateInitOption(options: InitOptions) {
     sendTypeByXmlBody,
     scopeError,
     event,
+    performance,
 
     beforePushEventList,
     beforeSendData,
@@ -145,42 +160,54 @@ function _validateInitOption(options: InitOptions) {
 
   const validateFunList = [];
 
-  if (error && typeof error === 'object') {
+  if (error && typeof error === "object") {
     validateFunList.push(
-      validateOption(error.core, 'error.core', 'boolean'),
-      validateOption(error.server, 'error.server', 'boolean')
+      validateOption(error.core, "error.core", "boolean"),
+      validateOption(error.server, "error.server", "boolean")
     );
   } else {
-    validateFunList.push(validateOption(error, 'error', 'boolean'));
+    validateFunList.push(validateOption(error, "error", "boolean"));
   }
 
-  if (event && typeof event === 'object') {
+  if (event && typeof event === "object") {
+    validateFunList.push(validateOption(event.core, "event.core", "boolean"));
+  } else {
+    validateFunList.push(validateOption(event, "event", "boolean"));
+  }
+
+  if (performance && typeof performance === "object") {
     validateFunList.push(
-      validateOption(event.core, 'event.core', 'boolean'),
+      validateOption(performance.core, "performance.core", "boolean"),
+      validateOption(performance.server, "performance.server", "boolean"),
+      validateOption(
+        performance.firstResource,
+        "performance.firstResource",
+        "boolean"
+      )
     );
   } else {
-    validateFunList.push(validateOption(event, 'event', 'boolean'));
+    validateFunList.push(validateOption(performance, "performance", "boolean"));
   }
 
   const validateList = [
-    validateOption(dsn, 'dsn', 'string'),
-    validateOption(appName, 'appName', 'string'),
-    validateOption(appCode, 'appCode', 'string'),
-    validateOption(appVersion, 'appVersion', 'string'),
-    validateOption(userUuid, 'userUuid', 'string'),
-    validateOption(debug, 'debug', 'boolean'),
-    validateOption(recordScreen, 'recordScreen', 'boolean'),
-    validateOption(cacheMaxLength, 'cacheMaxLength', 'number'),
-    validateOption(cacheWatingTime, 'cacheWatingTime', 'number'),
+    validateOption(dsn, "dsn", "string"),
+    validateOption(appName, "appName", "string"),
+    validateOption(appCode, "appCode", "string"),
+    validateOption(appVersion, "appVersion", "string"),
+    validateOption(userUuid, "userUuid", "string"),
+    validateOption(debug, "debug", "boolean"),
+    validateOption(recordScreen, "recordScreen", "boolean"),
+    validateOption(cacheMaxLength, "cacheMaxLength", "number"),
+    validateOption(cacheWatingTime, "cacheWatingTime", "number"),
 
-    validateOption(ext, 'ext', 'object'),
-    validateOption(tracesSampleRate, 'tracesSampleRate', 'number'),
-    validateOption(sendTypeByXmlBody, 'sendTypeByXmlBody', 'boolean'),
-    validateOption(scopeError, 'scopeError', 'boolean'),
+    validateOption(ext, "ext", "object"),
+    validateOption(tracesSampleRate, "tracesSampleRate", "number"),
+    validateOption(sendTypeByXmlBody, "sendTypeByXmlBody", "boolean"),
+    validateOption(scopeError, "scopeError", "boolean"),
 
-    validateOption(beforePushEventList, 'beforePushEventList', 'function'),
-    validateOption(beforeSendData, 'beforeSendData', 'function'),
-    validateOption(afterSendData, 'afterSendData', 'function'),
+    validateOption(beforePushEventList, "beforePushEventList", "function"),
+    validateOption(beforeSendData, "beforeSendData", "function"),
+    validateOption(afterSendData, "afterSendData", "function"),
   ];
 
   return (

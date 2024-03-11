@@ -1,8 +1,9 @@
 import { EVENTTYPES, SEDNEVENTTYPES } from "../common/constant";
 import { getLocationHref, getTimestamp, isValidKey } from "../utils";
-import { isSimpleEl } from "./element";
+import { getElByAttr, getNodeXPath, isSimpleEl } from "./element";
 import { eventBus } from "./eventBus";
 import { options } from "./options";
+import { sendData } from "./sendData";
 
 class RequestTemplateClick {
   eventId = ""; // 事件ID
@@ -45,8 +46,8 @@ function clickCollection() {
       const target = path.find(
         (el) =>
           el.hasAttribute &&
-          (el.hasAttribute("track-contaier") ||
-            el.hasAttribute("track-event-id") ||
+          (el.hasAttribute("track-container") ||
+            el.hasAttribute("track-id") ||
             el.hasAttribute("track-title"))
       );
 
@@ -60,10 +61,78 @@ function clickCollection() {
       _config.triggerTime = getTimestamp();
       _config.triggerPageUrl = getLocationHref();
       _config.title = extractTitleByTarget(target);
+      _config.eventId = extractDataByPath(path); // 提取数据事件ID
+      _config.params = extractParamsByPath(path); // 提取数据参数
+      _config.elementPath = getNodeXPath(target).slice(-128); // 长度限制128字符
 
-      console.log(_config);
+      sendData.emit(_config);
     },
   });
+}
+
+/**
+ * 提取数据参数
+ * 如果本身节点没有埋点属性的话会用父级埋点属性
+ */
+function extractParamsByPath(list: HTMLElement[] = []) {
+  const regx = /^track-/;
+  let target;
+  let targetIndex = -1;
+
+  // 遍历从子节点到body下最大的节点,遍历他们的属性,直到某个节点的属性能通过校验的节点
+  for (let i = 0; i < list.length; i++) {
+    const el = list[i];
+    const attributes = (el && el.attributes && Array.from(el.attributes)) || [];
+    target = attributes.find((item) =>
+      item.nodeName.match(regx)
+        ? item.nodeName.match(regx)
+        : item.nodeName.indexOf("track-container") !== -1
+    );
+    if (target) {
+      targetIndex = i;
+      break;
+    }
+  }
+
+  if (targetIndex < 0) return {};
+  const container = list[targetIndex];
+  const attrList = Array.from(container.attributes) || [];
+  const params: Record<string, string | null> = {};
+  const defaultKey = ["container", "title", "id"];
+  attrList.forEach((item) => {
+    if (item.nodeName.indexOf("track") < 0) return; // 过滤非标准命名 如 data-v-fbcf7454
+    const key = item.nodeName.replace(regx, "");
+    if (defaultKey.includes(key)) return; // 过滤sdk自定义属性
+    params[key] = item.nodeValue;
+  });
+
+  return params;
+}
+
+/**
+ * 提取数据事件ID
+ */
+function extractDataByPath(list: HTMLElement[] = []) {
+  const hasIdEl = getElByAttr(list, "track-id");
+  if (hasIdEl) return hasIdEl.getAttribute("track-id")!;
+
+  const hasTitleEl = getElByAttr(list, "title");
+  if (hasTitleEl) return hasTitleEl.getAttribute("title")!;
+
+  const container = getElByAttr(list, "track-container");
+  if (container) {
+    if (container.getAttribute("track-id")) {
+      return container.getAttribute("track-id")!;
+    }
+    if (container.getAttribute("title")) {
+      return container.getAttribute("title")!;
+    }
+    const id2 = container.getAttribute("track-container")!;
+    if (typeof id2 === "string" && id2) return id2;
+  }
+
+  // 都没有则以 tagname 去当做ID
+  return list[0].tagName.toLowerCase();
 }
 
 function extractTitleByTarget(target: HTMLElement) {

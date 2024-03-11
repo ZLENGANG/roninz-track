@@ -1,5 +1,6 @@
 import { EVENTTYPES } from "../common/constant";
-import { isValidKey, on, replaceAop, throttle } from "../utils";
+import { VoidFun } from "../types";
+import { getTimestamp, isValidKey, on, replaceAop, throttle } from "../utils";
 import { _global } from "../utils/global";
 import { eventBus } from "./eventBus";
 
@@ -33,6 +34,18 @@ function replace(type: EVENTTYPES) {
       listenBeforeunload(EVENTTYPES.BEFOREUNLOAD);
       break;
 
+    case EVENTTYPES.XHROPEN:
+      replaceXHROpen(EVENTTYPES.XHROPEN);
+      break;
+
+    case EVENTTYPES.XHRSEND:
+      replaceXHRSend(EVENTTYPES.XHRSEND);
+      break;
+
+    case EVENTTYPES.FETCH:
+      replaceFetch(EVENTTYPES.FETCH);
+      break;
+
     case EVENTTYPES.OFFLINE:
       listenOffline(EVENTTYPES.OFFLINE);
       break;
@@ -44,6 +57,48 @@ function replace(type: EVENTTYPES) {
     default:
       break;
   }
+}
+
+/**
+ * 重写 - fetch
+ */
+function replaceFetch(type: EVENTTYPES): void {
+  if (!("fetch" in _global)) return;
+  replaceAop(_global, "fetch", (originalFetch) => {
+    return function (this: any, ...args: any[]): void {
+      const fetchStart = getTimestamp();
+      return originalFetch.apply(_global, args).then((res: any) => {
+        eventBus.runEvent(type, ...args, res, fetchStart);
+        return res;
+      });
+    };
+  });
+}
+
+/**
+ * 重写 - XHR-send
+ */
+function replaceXHRSend(type: EVENTTYPES): void {
+  if (!("XMLHttpRequest" in _global)) return;
+  replaceAop(XMLHttpRequest.prototype, "send", (originalSend: VoidFun) => {
+    return function (this: any, ...args: any[]): void {
+      eventBus.runEvent(type, this, ...args);
+      originalSend.apply(this, args);
+    };
+  });
+}
+
+/**
+ * 重写 - XHR-open
+ */
+function replaceXHROpen(type: EVENTTYPES): void {
+  if (!("XMLHttpRequest" in _global)) return;
+  replaceAop(XMLHttpRequest.prototype, "open", (originalOpen: VoidFun) => {
+    return function (this: any, ...args: any[]): void {
+      eventBus.runEvent(type, ...args);
+      originalOpen.apply(this, args);
+    };
+  });
 }
 
 /**

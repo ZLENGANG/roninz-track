@@ -1,8 +1,16 @@
 <template>
-  <button track-contaier="容器btn">
-    <span>点我</span>
-  </button>
   <div style="background-color: #282828; height: 1000px" track-contaier="容器">
+    <button
+      track-container="容器btn"
+      track-id="123"
+      track-name="zl"
+      track-age="22"
+    >
+      <span>点我</span>
+    </button>
+
+    <hr />
+
     <div class="zlzl">
       <button @click="error('code')">代码错误</button>
       <button @click="error('promise')">promise错误</button>
@@ -14,6 +22,19 @@
       <button @click="add('script')">插入script</button>
       <button @click="add('img')">插入img</button>
       <button @click="add('video')">插入video</button>
+
+      <hr />
+      <button @click="sendReq('xhr-get')">xhr-get-success</button>
+      <button @click="sendReq('xhr-get-error')">xhr-get-error</button>
+
+      <button @click="sendReq('xhr-post')">xhr-post-success</button>
+      <button @click="sendReq('xhr-post-error')">xhr-post-error</button>
+
+      <button @click="sendReq('fetch-get')">fetch-get</button>
+      <button @click="sendReq('fetch-get-error')">fetch-get-error</button>
+
+      <button @click="sendReq('fetch-post')">fetch-post</button>
+      <button @click="sendReq('fetch-post-error')">fetch-post-error</button>
     </div>
   </div>
   <div
@@ -114,11 +135,106 @@ function add(type: string) {
       break;
   }
 }
+
+function sendReq(type: string) {
+  function getXhr(url: string) {
+    const xhr = new XMLHttpRequest();
+    xhr.open("get", url);
+    xhr.setRequestHeader("content-type", "application/json");
+    xhr.send();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        console.log("xhr-res", xhr.responseText);
+      }
+    };
+  }
+
+  function postXhr(url: string) {
+    const xhr = new XMLHttpRequest();
+    const body = { username: "example", password: "123456" };
+    xhr.open("post", "http://localhost:6657" + url);
+    xhr.setRequestHeader("content-type", "application/json");
+    xhr.send(JSON.stringify(body));
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        console.log("xhr-res", xhr.responseText);
+      }
+    };
+  }
+
+  function getFetch(url: string) {
+    fetch(`http://localhost:6657${url}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log("featch-res", res);
+      });
+  }
+
+  function postFetch(url: string) {
+    fetch(`http://localhost:6657${url}`, {
+      method: "POST",
+      body: JSON.stringify({ test: "测试请求体" }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log("featch-res", res);
+      });
+  }
+
+  switch (type) {
+    case "xhr-get":
+      getXhr("http://localhost:6657/getList?test=123");
+      break;
+
+    case "xhr-get-error":
+      getXhr("http://localhost:6657/getList2?test=123");
+      break;
+
+    case "xhr-post":
+      postXhr("/setList");
+      break;
+
+    case "xhr-post-error":
+      postXhr("/setList2");
+      break;
+
+    case "fetch-get":
+      getFetch("/getList?test=123");
+      break;
+
+    case "fetch-get-error":
+      getFetch("/getList1?test=123");
+      break;
+
+    case "fetch-post":
+      postFetch("/setList");
+      break;
+
+    case "fetch-post-error":
+      postFetch("/setList1");
+      break;
+
+    default:
+      break;
+  }
+}
 </script>
 
 <style>
 * {
   margin: 0;
   padding: 0;
+}
+
+hr {
+  margin: 20px 0;
 }
 </style>
