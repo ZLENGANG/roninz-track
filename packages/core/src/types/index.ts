@@ -13,6 +13,10 @@ interface Performance {
   server?: boolean; // 是否采集接口请求
 }
 
+interface Pv {
+  core?: boolean; // 是否发送页面跳转相关数据
+}
+
 export type InternalOptions = {
   /**上报地址 */
   dsn: string;
@@ -58,6 +62,8 @@ export type InternalOptions = {
   event: Event;
 
   performance: Performance;
+
+  pv: Pv;
 
   // 添加到行为列表前的 hook (在这里面可以给出错误类型，然后就能达到用户想拿到是何种事件类型的触发)
   beforePushEventList: AnyFun[];
@@ -114,6 +120,8 @@ export type InitOptions = {
   event?: Event | boolean;
 
   performance?: Performance | boolean;
+
+  pv?: Pv | boolean;
 
   // 添加到行为列表前的 hook (在这里面可以给出错误类型，然后就能达到用户想拿到是何种事件类型的触发)
   beforePushEventList?: AnyFun;

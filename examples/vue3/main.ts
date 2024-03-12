@@ -13,6 +13,7 @@ init({
   scopeError: true,
   event: true,
   performance: true,
+  pv: true,
   beforeSendData(data) {
     return {
       ...data,

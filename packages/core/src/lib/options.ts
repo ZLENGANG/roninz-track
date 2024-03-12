@@ -31,6 +31,10 @@ export class Options implements InternalOptions {
     server: false, // 接口请求-是否采集接口请求(成功的才会采集)
   };
 
+  pv = {
+    core: false,
+  };
+
   ext = {};
 
   beforePushEventList: AnyFun[] = [];
@@ -47,7 +51,7 @@ export class Options implements InternalOptions {
    */
   private transitionOptions(options: InitOptions): Options {
     const _options = deepAssign<Options>({}, this, options);
-    const { error, event, performance } = _options;
+    const { error, event, performance, pv } = _options;
     const { beforePushEventList, beforeSendData, afterSendData } = options;
 
     if (typeof error === "boolean") {
@@ -68,6 +72,12 @@ export class Options implements InternalOptions {
         core: performance,
         firstResource: performance,
         server: performance,
+      };
+    }
+
+    if (typeof pv === "boolean") {
+      _options.pv = {
+        core: pv,
       };
     }
 
@@ -152,6 +162,7 @@ function _validateInitOption(options: InitOptions) {
     scopeError,
     event,
     performance,
+    pv,
 
     beforePushEventList,
     beforeSendData,
@@ -187,6 +198,12 @@ function _validateInitOption(options: InitOptions) {
     );
   } else {
     validateFunList.push(validateOption(performance, "performance", "boolean"));
+  }
+
+  if (pv && typeof pv === "object") {
+    validateFunList.push(validateOption(pv.core, "pv.core", "boolean"));
+  } else {
+    validateFunList.push(validateOption(pv, "pv", "boolean"));
   }
 
   const validateList = [
