@@ -1,5 +1,5 @@
 import { AnyFun, AnyObj } from "../types";
-import { isArray, isFunction, isRegExp } from "./is";
+import { isArray, isFunction, isNumber, isRegExp } from "./is";
 
 /**
  * 添加事件监听器
@@ -276,6 +276,8 @@ export function sendByBeacon(url: string, data: any) {
   return navigator.sendBeacon(url, JSON.stringify(data));
 }
 
+export const sendReaconImageList: any[] = [];
+
 /**
  * 发送数据方式 - image
  */
@@ -283,7 +285,7 @@ export function sendByImage(url: string, data: any): Promise<void> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.src = `${url}?v=${encodeURIComponent(JSON.stringify(data))}`;
-
+    sendReaconImageList.push(image);
     image.onload = () => {
       resolve();
     };
@@ -400,4 +402,19 @@ export function parseGetParams(url: string): AnyObj<string> {
   }
 
   return params;
+}
+
+/**
+ * 格式化对象(针对数字类型属性)
+ * 小数位数保留最多两位、空值赋 undefined
+ * @param source 源对象
+ */
+export function normalizeObj(source: AnyObj) {
+  Object.keys(source).forEach((p) => {
+    const v = source[p];
+    if (isNumber(v)) {
+      source[p] = v === 0 ? undefined : parseFloat(v.toFixed(2));
+    }
+  });
+  return source;
 }

@@ -121,7 +121,7 @@ function add(type: string) {
 
     case "img":
       const img = document.createElement("img");
-      img.src = "https://dasdasdasd";
+      img.src = "https://th.bing.com/th/id/R.de7e1dcf98e725ab765c0b61478d8ff5?rik=7yqie%2fa32j2uxA&riu=http%3a%2f%2fb.zol-img.com.cn%2fdesk%2fbizhi%2fstart%2f3%2f1368604511486.jpg&ehk=JGWbrH30aClk4HeRboH7w99%2fMOhMX5m%2f7KepEepxVPE%3d&risl=&pid=ImgRaw&r=0";
       document.body.appendChild(img);
       break;
 
