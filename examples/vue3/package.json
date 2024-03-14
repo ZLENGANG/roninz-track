@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@roninz-track/core": "^1.0.0",
-    "@vitejs/plugin-vue": "^5.0.4"
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vue-router": "^4.3.0"
   }
 }
