@@ -1,5 +1,6 @@
 import { AnyFun, AnyObj } from "../types";
-import { isArray, isFunction, isNumber, isRegExp } from "./is";
+import { isInit } from "./global";
+import { isArray, isFunction, isNumber, isRegExp, logError } from "./is";
 
 /**
  * 添加事件监听器
@@ -417,4 +418,26 @@ export function normalizeObj(source: AnyObj) {
     }
   });
   return source;
+}
+
+
+/**
+ * 验证调用sdk暴露的方法之前是否初始化
+ * @param methodsName 方法名
+ * @returns 是否通过验证
+ */
+export function validateMethods(methodsName: string): boolean {
+  if (!isInit()) {
+    logError(`${methodsName} 需要在SDK初始化之后使用`)
+    return false
+  }
+  return true
+}
+
+/**
+ * 将未知参数转换为数组格式
+ * @param target
+ */
+export function unKnowToArray<T>(target: T[] | T): T[] {
+  return (isArray(target) ? target : [target]) as T[]
 }

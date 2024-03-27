@@ -1,1 +1,5 @@
-export function setupCounter(element: HTMLButtonElement): void
+declare interface Window {
+    __roninzTrack__: WebTrack
+    __roninzTrackInit__: boolean
+  }
+  

@@ -1,3 +1,6 @@
+import { BaseInfo } from "../lib/base";
+import { EventBus } from "../lib/eventBus";
+
 interface Error {
   core?: boolean; // 是否采集异常数据
   server?: boolean; // 是否采集报错接口数据
@@ -15,6 +18,23 @@ interface Performance {
 
 interface Pv {
   core?: boolean; // 是否发送页面跳转相关数据
+}
+
+export type WebTrack = {
+  eventBus: EventBus;
+  baseInfo: BaseInfo;
+  sendData: any;
+  lineStatus: any;
+  options: InternalOptions; // 配置信息
+  firstScreen: any; // 首屏信息
+  intersection: any; // 曝光采集
+};
+
+export type ElementOrList = Element | Element[]
+export interface TargetGather {
+  target: ElementOrList;
+  threshold: number;
+  params?: AnyObj;
 }
 
 export type InternalOptions = {

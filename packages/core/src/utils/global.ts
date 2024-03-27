@@ -20,6 +20,15 @@ export function getGlobal(): Window {
   return {} as Window;
 }
 
+
+/**
+ * 判断sdk是否初始化
+ * @returns sdk是否初始化
+ */
+export function isInit(): boolean {
+  return !!_global.__roninzTrackInit__
+}
+
 const _global = getGlobal();
 
 export { _global };

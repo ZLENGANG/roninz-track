@@ -41,7 +41,15 @@
       <button @click="jump('push')">跳转push</button>
       <button @click="jump('replace')">跳转replace</button>
     </div>
+
+    <div id="target" class="mb" v-observer="{ a: 1 }">
+      <img
+        style="height: 500px"
+        src="https://w.wallhaven.cc/full/85/wallhaven-858lz1.png"
+      />
+    </div>
   </div>
+
   <div
     style="
       width: 100px;

@@ -1,7 +1,11 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import { init } from "@roninz-track/core";
-import { createRouter, createWebHistory ,createWebHashHistory} from "vue-router";
+import roninzTrack from "@roninz-track/vue3";
+import {
+  createRouter,
+  createWebHistory,
+  createWebHashHistory,
+} from "vue-router";
 import Home from "./pages/home.vue";
 import Pv from "./pages/pv.vue";
 
@@ -17,7 +21,12 @@ const router = createRouter({
   ],
 });
 
-init({
+// let p = new Promise((resolve, reject) => {
+//   reject('error ddd');
+// });
+
+app.use(router);
+app.use(roninzTrack, {
   dsn: "http:/fsd",
   appName: "vue3",
   appCode: "ddd",
@@ -28,6 +37,9 @@ init({
   event: true,
   performance: true,
   pv: true,
+  ext: {
+    userName: "roninz",
+  },
   beforeSendData(data) {
     return {
       ...data,
@@ -40,9 +52,4 @@ init({
     console.log("发送成功！");
   },
 });
-// let p = new Promise((resolve, reject) => {
-//   reject('error ddd');
-// });
-
-app.use(router);
 app.mount("#app");
